@@ -23,8 +23,17 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/user/get/", http.StatusFound)
 }
 
+func getHandler(w http.ResponseWriter, r *http.Request) {
+	token := r.URL.Path[len("/user/get/"):]
+	var resp models.UserGetResponse
+	resp.Name = models.GetUser(token)
+	t, _ := template.ParseFiles("app/views/index.html")
+	t.Execute(w, resp)
+}
+
 func Route() {
 	http.HandleFunc("/user/creat", creatHandler)
 	http.HandleFunc("/save/", saveHandler)
+	http.HandleFunc("/user/get", getHandler)
 	log.Fatalln(http.ListenAndServe(fmt.Sprintf(":%d", config.Config.Port), nil))
 }
