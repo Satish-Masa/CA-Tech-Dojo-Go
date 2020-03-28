@@ -4,6 +4,7 @@ import (
 	"CA-Tech-Dojo-Go/config"
 	"fmt"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 )
 
