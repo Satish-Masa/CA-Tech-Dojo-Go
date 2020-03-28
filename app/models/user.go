@@ -31,3 +31,11 @@ func CreatUser(name string, token string) {
 	u.Token = token
 	sql.Create(&u)
 }
+
+func GetUser(token string) string {
+	sql := ConnectDB()
+	defer sql.Close()
+	var u User
+	name := sql.First(&u, "token = ?", token).Dialect().GetName()
+	return name
+}
