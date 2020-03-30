@@ -1,22 +1,49 @@
 package models
 
+import (
+	"log"
+
+	"github.com/dgrijalva/jwt-go"
+)
+
 type User struct {
-	name  string
-	token string
+	Name  string
+	Token string
 }
 
 type UserCreatRequest struct {
-	name string
+	Name string
 }
 
 type UserCreatResponse struct {
-	token string
+	Token string
 }
 
 type UserGetResponce struct {
-	name string
+	Name string
 }
 
 type UserUpdateRequest struct {
-	name string
+	Name string
+}
+
+func CreatToken(name string) (string, error) {
+	var err error
+	secret := "secret"
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"name": name,
+		"iss":  "__init__",
+	})
+	tokenString, err := token.SignedString([]byte(secret))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return tokenString, nil
+}
+
+func NewUser(name string, token string) *User {
+	var u User
+	u.Name = name
+	u.Token = token
+	return &u
 }
