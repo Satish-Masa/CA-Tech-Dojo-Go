@@ -13,6 +13,8 @@ type ConfigList struct {
 	Tcp       string
 	DbName    string
 	SQLDriver string
+
+	Port int
 }
 
 var Config ConfigList
@@ -30,5 +32,6 @@ func init() {
 		Tcp:       cfg.Section("db").Key("tcp").String(),
 		DbName:    cfg.Section("db").Key("dbname").String(),
 		SQLDriver: cfg.Section("db").Key("driver").String(),
+		Port:      cfg.Section("web").Key("port").MustInt(),
 	}
 }
