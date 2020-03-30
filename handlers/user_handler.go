@@ -1,13 +1,14 @@
 package handlers
 
 import (
-	"CA-Tech-Dojo-Go/config"
-	"CA-Tech-Dojo-Go/models"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/CA-Tech-Dojo-Go/config"
+	"github.com/CA-Tech-Dojo-Go/models"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
