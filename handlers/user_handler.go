@@ -66,6 +66,7 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 		var u models.User
 
 		db := ConnectDB()
+		defer db.Close()
 
 		u.Token = r.Header.Get("x-token")
 		db.First(&u, "name = ?", u.Token)
@@ -86,8 +87,34 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func updateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPut {
+		var u models.User
+
+		db := ConnectDB()
+		defer db.Close()
+
+		u.Token = r.Header.Get("x-token")
+		db.First(&u, "name = ?", u.Token)
+
+		var req models.UserUpdateRequest
+
+		v, err := json.Marshal(req)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(v)
+
+	} else {
+		fmt.Println("Not Method Type")
+	}
+}
+
 func Router() {
 	http.HandleFunc("/user/creat", creatHandler)
 	http.HandleFunc("/user/get", getHandler)
+	http.HandleFunc("/user/update", updateHandler)
 	log.Fatalln(http.ListenAndServe(fmt.Sprintf(":%d", config.Config.Port), nil))
 }
