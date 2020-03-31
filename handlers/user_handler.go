@@ -7,9 +7,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/CA-Tech-Dojo-Go/config"
-	"github.com/CA-Tech-Dojo-Go/models"
-
+	"github.com/Satish-Masa/CA-Tech-Dojo-Go/config"
+	"github.com/Satish-Masa/CA-Tech-Dojo-Go/models"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 )
@@ -62,7 +61,33 @@ func ConnectDB() *gorm.DB {
 	return db
 }
 
+func getHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		var u models.User
+
+		db := ConnectDB()
+
+		u.Token = r.Header.Get("x-token")
+		db.First(&u, "name = ?", u.Token)
+
+		var resp models.UserGetResponce
+		resp.Name = u.Name
+
+		v, err := json.Marshal(resp)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(v)
+
+	} else {
+		fmt.Println("Not Method")
+	}
+}
+
 func Router() {
 	http.HandleFunc("/user/creat", creatHandler)
+	http.HandleFunc("/user/get", getHandler)
 	log.Fatalln(http.ListenAndServe(fmt.Sprintf(":%d", config.Config.Port), nil))
 }
