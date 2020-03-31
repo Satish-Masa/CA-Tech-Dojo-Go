@@ -1,7 +1,9 @@
 package main
 
-import "CA-Tech-Dojo-Go/app/controllers"
+import (
+	"fmt"
+)
 
 func main() {
-	controllers.Router()
+	fmt.Println("Hello World")
 }
