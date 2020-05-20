@@ -112,7 +112,7 @@ func updateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Router() {
+func Start() {
 	http.HandleFunc("/user/creat", creatHandler)
 	http.HandleFunc("/user/get", getHandler)
 	http.HandleFunc("/user/update", updateHandler)
