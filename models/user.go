@@ -41,8 +41,7 @@ func CreatToken(name string) (string, error) {
 	return tokenString, nil
 }
 
-func NewUser(name string, token string) *User {
-	var u User
+func (u *User) NewUser(name string, token string) *User {
 	u.Name = name
 	u.Token = token
 	return &u
