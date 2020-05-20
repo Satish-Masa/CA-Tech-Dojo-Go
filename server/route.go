@@ -1,55 +1,41 @@
 package server
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/config"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/models"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	"github.com/labstack/echo/v4"
 )
 
-func creatHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		var req models.UserCreatRequest
+func creatHandler(c echo.Context) error {
+	req := new(models.UserCreatRequest)
 
-		row, err := ioutil.ReadFile("./user_creat_reeequest.json")
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-
-		if err := json.Unmarshal(row, &req); err != nil {
-			fmt.Println(err.Error())
-		}
-
-		token, err := models.CreatToken(string(row))
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-
-		var resp models.UserCreatResponse
-
-		resp.Token = token
-
-		u := models.NewUser(string(row), token)
-		db := ConnectDB()
-		defer db.Close()
-		db.Create(&u)
-
-		v, err := json.Marshal(resp)
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(v)
-	} else {
-		fmt.Println("not Method")
+	if err := c.Bind(req); err != nil {
+		return err
 	}
+
+	token, err := models.CreatToken(req.name)
+	if err != nil {
+		return err
+	}
+
+	resp := new(models.UserCreatResponse)
+
+	resp.Token = token
+
+	u := models.NewUser(req.name, token)
+	db := ConnectDB()
+	defer db.Close()
+	db.Create(&u)
+
+	if err := c.Bind(resp); err != nil {
+		return err
+	}
+	return c.JSON(http.StatusCreated, resp)
 }
 
 func ConnectDB() *gorm.DB {
@@ -61,60 +47,46 @@ func ConnectDB() *gorm.DB {
 	return db
 }
 
-func getHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		var u models.User
+func getHandler(c echo.Context) error {
+	u := new(models.User)
 
-		db := ConnectDB()
-		defer db.Close()
+	db := ConnectDB()
+	defer db.Close()
 
-		u.Token = r.Header.Get("x-token")
-		db.First(&u, "name = ?", u.Token)
-
-		var resp models.UserGetResponce
-		resp.Name = u.Name
-
-		v, err := json.Marshal(resp)
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(v)
-
-	} else {
-		fmt.Println("Not Method")
+	if err := c.Bind(u); err != nil {
+		return err
 	}
+	db.First(&u, "name = ?", u.Token)
+
+	resp := new(models.UserGetResponce)
+	resp.Name = u.Name
+
+	return c.JSON(http.StatusOK, resp)
 }
 
-func updateHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPut {
-		var u models.User
+func updateHandler(c echo.Context) error {
+	u := new(models.User)
 
-		db := ConnectDB()
-		defer db.Close()
+	db := ConnectDB()
+	defer db.Close()
 
-		u.Token = r.Header.Get("x-token")
-		db.First(&u, "name = ?", u.Token)
-
-		var req models.UserUpdateRequest
-
-		v, err := json.Marshal(req)
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(v)
-
-	} else {
-		fmt.Println("Not Method Type")
+	if err := c.Bind(u); err != nil {
+		return err
 	}
+	db.First(&u, "name = ?", u.Token)
+
+	req := new(models.UserUpdateRequest)
+
+	if err := c.Bind(req); err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, req)
 }
 
 func Start() {
-	http.HandleFunc("/user/creat", creatHandler)
-	http.HandleFunc("/user/get", getHandler)
-	http.HandleFunc("/user/update", updateHandler)
-	log.Fatalln(http.ListenAndServe(fmt.Sprintf(":%d", config.Config.Port), nil))
+	e := echo.New()
+	e.POST("/user/creat", creatHandler)
+	e.GET("/user/get", getHandler)
+	e.PUT("/user/update", updateHandler)
+	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", config.Config.Port)))
 }
