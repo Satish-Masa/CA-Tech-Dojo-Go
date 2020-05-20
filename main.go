@@ -1,9 +1,8 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/config"
+	"github.com/Satish-Masa/CA-Tech-Dojo-Go/server"
 )
 
 func init() {
@@ -11,5 +10,5 @@ func init() {
 }
 
 func main() {
-	fmt.Println("Hello World")
+	server.Start()
 }
