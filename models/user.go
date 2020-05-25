@@ -32,13 +32,24 @@ type UserUpdateRequest struct {
 	Token string `json: "token"`
 }
 
-func ConnectDB() *gorm.DB {
+func ConnectDB() (*gorm.DB, error) {
 	tmp := "%s:%s@%s/%s"
 	connect := fmt.Sprintf(tmp, config.Config.DbUser, config.Config.Password, config.Config.Tcp, config.Config.DbName)
 	driver := config.Config.SQLDriver
-	db, _ := gorm.Open(driver, connect)
-	db.AutoMigrate(&User{})
-	return db
+	db, err := gorm.Open(driver, connect)
+	return db, err
+}
+
+func CreateUserTable() error {
+	db, err := ConnectDB()
+	if err != nil {
+		return err
+	}
+	db.Close()
+	if err := db.AutoMigrate(&User{}).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 func creatToken(name string) (string, error) {
@@ -75,7 +86,10 @@ func NewUser(name, token string) *User {
 
 func SaveUser(name, token string) error {
 	u := NewUser(name, token)
-	db := ConnectDB()
+	db, err := ConnectDB()
+	if err != nil {
+		return err
+	}
 	db.Close()
 	err := db.Create(&u).Error
 	if err != nil {
@@ -86,7 +100,10 @@ func SaveUser(name, token string) error {
 }
 
 func SearchUser(token string) *UserGetResponce {
-	db := ConnectDB()
+	db, err := ConnectDB()
+	if err != nil {
+		log.Println(err)
+	}
 	db.Close()
 	resp := new(UserGetResponce)
 	db.First(&resp, "name=?", token)
@@ -94,7 +111,10 @@ func SearchUser(token string) *UserGetResponce {
 }
 
 func UpdateUser(name, token string) error {
-	db := ConnectDB()
+	db, err := ConnectDB()
+	if err != nil {
+		return err
+	}
 	db.Close()
 	var u User
 	err := db.Model(&u).Where("token=?", token).Update("name", name).Error
