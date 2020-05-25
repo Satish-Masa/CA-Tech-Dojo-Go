@@ -15,8 +15,29 @@ func CreatUserCharacterTable() error {
 	if err != nil {
 		return err
 	}
-
 	db.Close()
+	if err = db.AutoMigrate(&UserCharacter{}).Error; err != nil {
+		return err
+	}
 
-	db.AutoMigrate(&UserCharacter{})
+	db.Create(&UserCharacter{
+		UserCharacterID: "",
+		CharacterID:     "0001",
+		Name:            "User01",
+	})
+	db.Create(&UserCharacter{
+		UserCharacterID: "",
+		CharacterID:     "0002",
+		Name:            "User02",
+	})
+	db.Create(&UserCharacter{
+		UserCharacterID: "",
+		CharacterID:     "0003",
+		Name:            "User03",
+	})
+	db.Create(&UserCharacter{
+		UserCharacterID: "",
+		CharacterID:     "0004",
+		Name:            "User04",
+	})
 }
