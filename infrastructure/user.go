@@ -18,8 +18,7 @@ func ConnectDB() (*gorm.DB, error) {
 	return db, err
 }
 
-func SaveUser(name, token string) error {
-	u, _ := domain.NewUser(name, token)
+func SaveUser(u *domain.User) error {
 	db, err := ConnectDB()
 	if err != nil {
 		return err
@@ -33,7 +32,7 @@ func SaveUser(name, token string) error {
 	return nil
 }
 
-func SearchUser(token string) *application.UserGetResponce {
+func FindUser(token string) *application.UserGetResponce {
 	db, err := ConnectDB()
 	if err != nil {
 		log.Println(err)
@@ -44,14 +43,13 @@ func SearchUser(token string) *application.UserGetResponce {
 	return &resp
 }
 
-func UpdateUser(name, token string) error {
+func UpdateUser(u *domain.User) error {
 	db, err := ConnectDB()
 	if err != nil {
 		return err
 	}
 	db.Close()
-	var u domain.User
-	err := db.Model(&u).Where("token=?", token).Update("name", name).Error
+	err := db.Model(&u).Where("token=?", u.Token).Update("name", u.Name).Error
 	if err != nil {
 		return err
 	}
