@@ -3,9 +3,14 @@ package application
 import (
 	"log"
 
+	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/infrastructure"
 	"github.com/dgrijalva/jwt-go"
 )
+
+type UserApplication struct {
+	infra infrastructure.UserInfrastracture
+}
 
 type UserCreatRequest struct {
 	Name string `json: "name"`
@@ -38,25 +43,33 @@ func creatToken(name string) (string, error) {
 	return tokenString, nil
 }
 
-func FetchToken(name string) *UserCreatResponse {
-	token, err := creatToken(name)
+func FetchToken(u *UserCreatRequest) (*UserCreatResponse, error) {
+	token, err := creatToken(u.Name)
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
-	resp := new(UserCreatResponse)
-	resp.Token = token
 
-	return &resp
+	return &UserCreatResponse{
+		Token: token,
+	}, nil
 }
 
-func SaveUser(name, token string) error {
-	return infrastructure.SaveUser(name, token)
+func (a *UserApplication) SaveUser(name, token string) error {
+	u, err := domain.NewUser(name, token)
+	if err != nil {
+		return err
+	}
+	return a.infra.SaveUser(u)
 }
 
-func SearchUser(token string) *UserGetResponce {
-	return infrastructure.SearchUser(token)
+func (a *UserApplication) FindUser(u *domain.User) *UserGetResponce {
+	return a.infra.FindUser(u.Token)
 }
 
-func UpdateUser(name, token string) error {
-	return infrastructure.UpdateUser(name, token)
+func (a *UserApplication) UpdateUser(name, token string) error {
+	u, err := domain.NewUser(name, token)
+	if err != nil {
+		return err
+	}
+	return a.infra.UpdateUser(u)
 }
