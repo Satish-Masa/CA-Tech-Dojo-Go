@@ -18,11 +18,21 @@ func creatHandler(c echo.Context) error {
 		return err
 	}
 
-	resp := application.FetchToken(req.Name)
+	resp, err := application.FetchToken(req)
 
-	err := application.SaveUser(req.Name, resp.Token)
 	if err != nil {
 		log.Println(err)
+	} else {
+		err := saveHandler(c, req, resp)
+		return err
+	}
+
+}
+
+func saveHandler(c echo.Context, req *application.UserCreatRequest, resp *application.UserCreatResponse) error {
+	err := application.SaveUser(req.Name, resp.Token)
+	if err != nil {
+		return err
 	}
 
 	if err := c.Bind(resp); err != nil {
@@ -38,7 +48,7 @@ func getHandler(c echo.Context) error {
 		return err
 	}
 
-	resp := application.SearchUser(u.Token)
+	resp := application.SearchUser(u)
 
 	if err := c.Bind(resp); err != nil {
 		return err
