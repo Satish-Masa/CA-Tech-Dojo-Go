@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	application "github.com/Satish-Masa/CA-Tech-Dojo-Go/application/user"
+	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/user"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/config"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain"
 	"github.com/jinzhu/gorm"
@@ -18,7 +18,7 @@ func ConnectDB() (*gorm.DB, error) {
 	return db, err
 }
 
-func SaveUser(u *domain.User) error {
+func Save(u *domain.User) error {
 	db, err := ConnectDB()
 	if err != nil {
 		return err
@@ -32,18 +32,18 @@ func SaveUser(u *domain.User) error {
 	return nil
 }
 
-func FindUser(token string) *application.UserGetResponce {
+func Find(token string) *user.UserGetResponce {
 	db, err := ConnectDB()
 	if err != nil {
 		log.Println(err)
 	}
 	db.Close()
-	resp := new(application.UserGetResponce)
+	resp := new(user.UserGetResponce)
 	db.First(&resp, "name=?", token)
 	return &resp
 }
 
-func UpdateUser(u *domain.User) error {
+func Update(u *domain.User) error {
 	db, err := ConnectDB()
 	if err != nil {
 		return err
