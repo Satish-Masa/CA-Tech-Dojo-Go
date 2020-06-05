@@ -1,4 +1,4 @@
-package application
+package user
 
 import (
 	"log"
@@ -54,16 +54,12 @@ func FetchToken(u *UserCreatRequest) (*UserCreatResponse, error) {
 	}, nil
 }
 
-func (a *UserApplication) SaveUser(name, token string) error {
-	u, err := domain.NewUser(name, token)
-	if err != nil {
-		return err
-	}
-	return a.infra.SaveUser(u)
+func (a *UserApplication) SaveUser(u *domain.User) error {
+	return a.infra.Save(u)
 }
 
 func (a *UserApplication) FindUser(u *domain.User) *UserGetResponce {
-	return a.infra.FindUser(u.Token)
+	return a.infra.Find(u.Token)
 }
 
 func (a *UserApplication) UpdateUser(name, token string) error {
@@ -71,5 +67,5 @@ func (a *UserApplication) UpdateUser(name, token string) error {
 	if err != nil {
 		return err
 	}
-	return a.infra.UpdateUser(u)
+	return a.infra.Update(u)
 }
