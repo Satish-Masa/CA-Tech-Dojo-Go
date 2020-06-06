@@ -66,7 +66,7 @@ func updateHandler(c echo.Context) error {
 	return user.UpdateUser(req)
 }
 
-func gachaHandler(c echo.Context) gacha.GachaDrawResponse {
+func gachaHandler(c echo.Context) error {
 	req := new(gacha.GachaDrawRequest)
 
 	if err := c.Bind(req); err != nil {
@@ -75,7 +75,7 @@ func gachaHandler(c echo.Context) gacha.GachaDrawResponse {
 
 	resp, _ := gacha.DoGacha(req)
 
-	return resp
+	return c.JSON(http.StatusOK, resp)
 }
 
 func Start() {
