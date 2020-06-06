@@ -41,9 +41,6 @@ func saveHandler(c echo.Context, req *user.UserCreatRequest, resp *user.UserCrea
 		return err
 	}
 
-	if err := c.Bind(resp); err != nil {
-		return err
-	}
 	return c.JSON(http.StatusCreated, resp)
 }
 
@@ -56,9 +53,6 @@ func getHandler(c echo.Context) error {
 
 	resp := user.FindUser(u)
 
-	if err := c.Bind(resp); err != nil {
-		return err
-	}
 	return c.JSON(http.StatusOK, resp)
 }
 
