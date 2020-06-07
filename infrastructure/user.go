@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 
@@ -10,6 +11,10 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+type userRepository struct {
+	ConnectDB() (*gorm.DB, error)
+}
+
 func ConnectDB() (*gorm.DB, error) {
 	tmp := "%s:%s@%s/%s"
 	connect := fmt.Sprintf(tmp, config.Config.DbUser, config.Config.Password, config.Config.Tcp, config.Config.DbName)
@@ -18,8 +23,8 @@ func ConnectDB() (*gorm.DB, error) {
 	return db, err
 }
 
-func Save(u *domain.User) error {
-	db, err := ConnectDB()
+func (r *userRepository) Save(u *domain.User) error {
+	db, err := r.ConnectDB()
 	if err != nil {
 		return err
 	}
@@ -32,8 +37,8 @@ func Save(u *domain.User) error {
 	return nil
 }
 
-func Find(token string) *user.UserGetResponce {
-	db, err := ConnectDB()
+func (r *userRepository) Find(token string) *user.UserGetResponce {
+	db, err := r.ConnectDB()
 	if err != nil {
 		log.Println(err)
 	}
@@ -43,8 +48,8 @@ func Find(token string) *user.UserGetResponce {
 	return &resp
 }
 
-func Update(u *domain.User) error {
-	db, err := ConnectDB()
+func (r *userRepository) Update(u *domain.User) error {
+	db, err := r.ConnectDB()
 	if err != nil {
 		return err
 	}
