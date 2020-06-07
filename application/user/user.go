@@ -4,12 +4,12 @@ import (
 	"log"
 
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain"
-	"github.com/Satish-Masa/CA-Tech-Dojo-Go/infrastructure"
+	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/repository"
 	"github.com/dgrijalva/jwt-go"
 )
 
 type UserApplication struct {
-	infra infrastructure.UserInfrastracture
+	Repository repository.UserRepository
 }
 
 type UserCreatRequest struct {
@@ -54,18 +54,18 @@ func FetchToken(u *UserCreatRequest) (*UserCreatResponse, error) {
 	}, nil
 }
 
-func (a *UserApplication) SaveUser(u *domain.User) error {
-	return a.infra.Save(u)
+func (a UserApplication) SaveUser(u domain.User) error {
+	return a.Repository.Save(u)
 }
 
-func (a *UserApplication) FindUser(u *domain.User) *UserGetResponce {
-	return a.infra.Find(u.Token)
+func (a UserApplication) FindUser(u domain.User) UserGetResponce {
+	return a.Repository.Find(u.Token)
 }
 
-func (a *UserApplication) UpdateUser(name, token string) error {
+func (a UserApplication) UpdateUser(name, token string) error {
 	u, err := domain.NewUser(name, token)
 	if err != nil {
 		return err
 	}
-	return a.infra.Update(u)
+	return a.Repository.Update(u)
 }
