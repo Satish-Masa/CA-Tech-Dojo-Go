@@ -9,10 +9,15 @@ import (
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/user"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/config"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain"
+	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/repository"
 	"github.com/labstack/echo/v4"
 )
 
-func creatHandler(c echo.Context) error {
+type Rest struct {
+	Repository repository.UserRepository
+}
+
+func (r Rest) creatHandler(c echo.Context) error {
 	req := new(user.UserCreatRequest)
 
 	if err := c.Bind(req); err != nil {
@@ -24,19 +29,23 @@ func creatHandler(c echo.Context) error {
 	if err != nil {
 		log.Println(err)
 	} else {
-		err := saveHandler(c, req, resp)
+		err := r.saveHandler(c, req, resp)
 		return err
 	}
 
 }
 
-func saveHandler(c echo.Context, req *user.UserCreatRequest, resp *user.UserCreatResponse) error {
+func (r Rest) saveHandler(c echo.Context, req user.UserCreatRequest, resp user.UserCreatResponse) error {
 	u, err := domain.NewUser(req.Name, resp.Token)
 	if err != nil {
 		return err
 	}
 
-	err := user.SaveUser(u)
+	application := user.UserApplication{
+		Repository: r.Repository,
+	}
+
+	err := application.SaveUser(u)
 	if err != nil {
 		return err
 	}
@@ -44,26 +53,34 @@ func saveHandler(c echo.Context, req *user.UserCreatRequest, resp *user.UserCrea
 	return c.JSON(http.StatusCreated, resp)
 }
 
-func getHandler(c echo.Context) error {
+func (r Rest) getHandler(c echo.Context) error {
 	u := new(domain.User)
 
 	if err := c.Bind(u); err != nil {
 		return err
 	}
 
-	resp := user.FindUser(u)
+	application := user.UserApplication{
+		Repository: r.Repository,
+	}
+
+	resp := application.FindUser(u)
 
 	return c.JSON(http.StatusOK, resp)
 }
 
-func updateHandler(c echo.Context) error {
+func (r Rest) updateHandler(c echo.Context) error {
 	req := new(user.UserUpdateRequest)
 
 	if err := c.Bind(req); err != nil {
 		return err
 	}
 
-	return user.UpdateUser(req)
+	application := user.UserApplication{
+		Repository: r.Repository,
+	}
+
+	return application.UpdateUser(req)
 }
 
 func gachaHandler(c echo.Context) error {
@@ -78,11 +95,23 @@ func gachaHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
-func Start() {
+func listHandler(c echo.Context) error {
+	req := new(domain.User)
+	if err := c.Bind(req); err != nil {
+		return err
+	}
+
+	resp := user.GetList(req)
+
+	return c.JSON(http.StatusOK, resp)
+}
+
+func (r Rest) Start() {
 	e := echo.New()
-	e.POST("/user/creat", creatHandler)
-	e.GET("/user/get", getHandler)
-	e.PUT("/user/update", updateHandler)
+	e.POST("/user/creat", r.creatHandler)
+	e.GET("/user/get", r.getHandler)
+	e.PUT("/user/update", r.updateHandler)
 	e.POST("/gacha/draw", gachaHandler)
+	e.GET("/character/list", listHandler)
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", config.Config.Port)))
 }
