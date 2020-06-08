@@ -29,6 +29,16 @@ type UserUpdateRequest struct {
 	Token string `json: "token"`
 }
 
+type CharacterListResponse struct {
+	Characters []UserCharacter `json: "characters"`
+}
+
+type UserCharacter struct {
+	UserCharacterID string `json: "userCharacterID"`
+	CharacterID     int    `json: "characterID"`
+	Name            string `json: "name"`
+}
+
 func creatToken(name string) (string, error) {
 	var err error
 	secret := "secret"
@@ -68,4 +78,8 @@ func (a UserApplication) UpdateUser(name, token string) error {
 		return err
 	}
 	return a.Repository.Update(u)
+}
+
+func (a UserApplication) GetList(u domain.User) CharacterListResponse {
+	return a.Repository.FindChara(u.Token)
 }
