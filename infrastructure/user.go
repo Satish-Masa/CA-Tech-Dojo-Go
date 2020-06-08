@@ -28,7 +28,7 @@ func (r *userRepository) Save(u *domain.User) error {
 	if err != nil {
 		return err
 	}
-	db.Close()
+	defer db.Close()
 	err := db.Create(&u).Error
 	if err != nil {
 		return err
@@ -42,7 +42,7 @@ func (r *userRepository) Find(token string) *user.UserGetResponce {
 	if err != nil {
 		log.Println(err)
 	}
-	db.Close()
+	defer db.Close()
 	resp := new(user.UserGetResponce)
 	db.First(&resp, "name=?", token)
 	return &resp
@@ -53,10 +53,25 @@ func (r *userRepository) Update(u *domain.User) error {
 	if err != nil {
 		return err
 	}
-	db.Close()
+	defer db.Close()
 	err := db.Model(&u).Where("token=?", u.Token).Update("name", u.Name).Error
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (r *userRepository) FindChara(token string) user.CharacterListResponse {
+	db, err := r.ConnectDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	var count int
+	db.Model(domain.Character).Where("token=?", token).Count(&count)
+
+	for i := 0; i < count; i++{
+
+	}
 }
