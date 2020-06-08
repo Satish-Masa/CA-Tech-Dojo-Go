@@ -5,8 +5,13 @@ import (
 	"math/big"
 
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain"
+	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/repository"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/infrastructure"
 )
+
+type GachaApplication struct {
+	Repository repository.CharacterRepository
+}
 
 type GachaDrawRequest struct {
 	Time int `json: "time"`
@@ -21,17 +26,19 @@ type GachaResult struct {
 	Name        string `json: "name"`
 }
 
-func DoGacha(g *GachaDrawRequest) *GachaDrawResponse {
+// DoGacha()で回数のリクエストを受け取り、結果のレスポンスを返す。
+func (r *GachaApplication) DoGacha(g GachaDrawRequest) GachaDrawResponse {
 	time := g.Time
-	result := run(time)
+	result := r.run(time)
 	var resp GachaDrawResponse
-	resp = result
+	resp.Results = result
 
-	return &resp
+	return resp
 }
 
-func run(int time) []GachaResult {
-	count := infrastructure.CharaCount()
+// ガチャの結果を決める抽選するメソッド
+func (r *GachaApplication) run(time int) []GachaResult {
+	count, _ := infrastructure.CharaCount()
 	result := make([]GachaResult, time)
 
 	for i := 0; i < time; i++ {
@@ -40,10 +47,10 @@ func run(int time) []GachaResult {
 			panic(err)
 		}
 		result[i].CharacterID = n
-		name := infrastructure.FindChara(n)
+		name, _ := infrastructure.FindChara(n)
 		result[i].Name = name
 
-		err := update(result)
+		err := r.update(result)
 		if err != nil {
 			panic(err)
 		}
@@ -52,14 +59,15 @@ func run(int time) []GachaResult {
 	return result
 }
 
-func update(r *GachaResult) error {
+// データベースにガチャの結果を保存するメソッド
+func (r *GachaApplication) update(g GachaResult) error {
 	var chara domain.Character
-	chara.CharacterID = r.CharacterID
+	chara.CharacterID = g.CharacterID
 	// ガチャをしたUserのTokenをUserCharacterIDに入れる
 	// chara.UserCharacterID = token
-	chara.Name = r.Name
+	chara.Name = g.Name
 
-	err := UpdateChar(chara)
+	err := infrastructure.UpdateChar(chara)
 	if err != nil {
 		return err
 	}
