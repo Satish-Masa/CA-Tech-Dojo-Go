@@ -5,35 +5,48 @@ import (
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain"
 )
 
-func CharaCount() int {
-	db, err := ConnectDB()
-	if err != nil {
-		return err
-	}
-	db.Close()
-	count := db.Table("character").Count()
-
-	return count
+type gachaRepository struct {
+	ConnectDB() (*gorm.DB, error)
 }
 
-func FindChara(int n) string {
-	db, err := ConnectDB()
+func ConnectDB() (*gorm.DB, error) {
+	tmp := "%s:%s@%s/%s"
+	connect := fmt.Sprintf(tmp, config.Config.DbUser, config.Config.Password, config.Config.Tcp, config.Config.DbName)
+	driver := config.Config.SQLDriver
+	db, err := gorm.Open(driver, connect)
+	return db, err
+}
+
+func (g *gachaRepository) CharaCount() (int, error) {
+	db, err := g.ConnectDB()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	db.Close()
+	defer db.Close()
+	var count int
+	db.Table("character").Count(&count)
+
+	return count, nil
+}
+
+func (g *gachaRepository) FindChara(n int) (string, error) {
+	db, err := g.ConnectDB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
 	var result gacha.GachaResult
 	db.First(&result, "name=?", characterID)
 
-	return result.Name
+	return result.Name, nil
 }
 
-func UpdateChar(chara domain.Character) error {
-	db, err := ConnectDB()
+func (g *gachaRepository) UpdateChar(chara domain.Character) error {
+	db, err := g.ConnectDB()
 	if err != nil {
 		return err
 	}
-	db.Close()
+	defer db.Close()
 	err := db.Create(&chara).Error
 	if err != nil {
 		return err
