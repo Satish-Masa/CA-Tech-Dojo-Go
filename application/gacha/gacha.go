@@ -1,8 +1,8 @@
 package gacha
 
 import (
-	"crypto/rand"
-	"math/big"
+	"math/rand"
+	"time"
 
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/repository"
@@ -14,7 +14,7 @@ type GachaApplication struct {
 }
 
 type GachaDrawRequest struct {
-	Time int `json: "time"`
+	Times int `json: "times"`
 }
 
 type GachaDrawResponse struct {
@@ -27,9 +27,9 @@ type GachaResult struct {
 }
 
 // DoGacha()で回数のリクエストを受け取り、結果のレスポンスを返す。
-func (r *GachaApplication) DoGacha(g GachaDrawRequest) GachaDrawResponse {
-	time := g.Time
-	result := r.run(time)
+func (r GachaApplication) DoGacha(g *GachaDrawRequest) GachaDrawResponse {
+	times := g.Times
+	result := r.run(times)
 	var resp GachaDrawResponse
 	resp.Results = result
 
@@ -37,20 +37,16 @@ func (r *GachaApplication) DoGacha(g GachaDrawRequest) GachaDrawResponse {
 }
 
 // ガチャの結果を決める抽選するメソッド
-func (r *GachaApplication) run(time int) []GachaResult {
+func (r GachaApplication) run(times int) []GachaResult {
 	count, _ := infrastructure.CharaCount()
-	result := make([]GachaResult, time)
+	result := make([]GachaResult, times)
 
-	for i := 0; i < time; i++ {
-		n, err := rand.Int(rand.Reader, big.NewInt(count))
-		if err != nil {
-			panic(err)
-		}
-		result[i].CharacterID = n
-		name, _ := infrastructure.FindChara(n)
-		result[i].Name = name
-
-		err := r.update(result)
+	for i := 0; i < times; i++ {
+		var res GachaResult
+		rand.Seed(time.Now().UnixNano())
+		res.CharacterID = rand.Intn(count)
+		res.Name, _ = infrastructure.FindChara(res.CharacterID)
+		err := r.update(res)
 		if err != nil {
 			panic(err)
 		}
@@ -60,7 +56,7 @@ func (r *GachaApplication) run(time int) []GachaResult {
 }
 
 // データベースにガチャの結果を保存するメソッド
-func (r *GachaApplication) update(g GachaResult) error {
+func (r GachaApplication) update(g GachaResult) error {
 	var chara domain.Character
 	chara.CharacterID = g.CharacterID
 	// ガチャをしたUserのTokenをUserCharacterIDに入れる
