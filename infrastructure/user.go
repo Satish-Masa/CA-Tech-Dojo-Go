@@ -1,7 +1,6 @@
 package infrastructure
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 
@@ -11,10 +10,6 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type userRepository struct {
-	ConnectDB() (*gorm.DB, error)
-}
-
 func ConnectDB() (*gorm.DB, error) {
 	tmp := "%s:%s@%s/%s"
 	connect := fmt.Sprintf(tmp, config.Config.DbUser, config.Config.Password, config.Config.Tcp, config.Config.DbName)
@@ -23,13 +18,13 @@ func ConnectDB() (*gorm.DB, error) {
 	return db, err
 }
 
-func (r *userRepository) Save(u *domain.User) error {
-	db, err := r.ConnectDB()
+func Save(u *domain.User) error {
+	db, err := ConnectDB()
 	if err != nil {
 		return err
 	}
 	defer db.Close()
-	err := db.Create(&u).Error
+	err = db.Create(&u).Error
 	if err != nil {
 		return err
 	}
@@ -37,32 +32,32 @@ func (r *userRepository) Save(u *domain.User) error {
 	return nil
 }
 
-func (r *userRepository) Find(token string) *user.UserGetResponce {
-	db, err := r.ConnectDB()
+func Find(token string) *user.UserGetResponce {
+	db, err := ConnectDB()
 	if err != nil {
 		log.Println(err)
 	}
 	defer db.Close()
 	resp := new(user.UserGetResponce)
 	db.First(&resp, "name=?", token)
-	return &resp
+	return resp
 }
 
-func (r *userRepository) Update(u *domain.User) error {
-	db, err := r.ConnectDB()
+func Update(u *domain.User) error {
+	db, err := ConnectDB()
 	if err != nil {
 		return err
 	}
 	defer db.Close()
-	err := db.Model(&u).Where("token=?", u.Token).Update("name", u.Name).Error
+	err = db.Model(&u).Where("token=?", u.Token).Update("name", u.Name).Error
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *userRepository) FindChara(token string) user.CharacterListResponse {
-	db, err := r.ConnectDB()
+/* func FindChara(token string) user.CharacterListResponse {
+	db, err := ConnectDB()
 	if err != nil {
 		return err
 	}
@@ -71,7 +66,7 @@ func (r *userRepository) FindChara(token string) user.CharacterListResponse {
 	var count int
 	db.Model(domain.Character).Where("token=?", token).Count(&count)
 
-	for i := 0; i < count; i++{
+	for i := 0; i < count; i++ {
 
 	}
-}
+} */
