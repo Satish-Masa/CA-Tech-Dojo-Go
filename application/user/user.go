@@ -64,19 +64,15 @@ func FetchToken(u *UserCreatRequest) (*UserCreatResponse, error) {
 	}, nil
 }
 
-func (a UserApplication) SaveUser(u domain.User) error {
+func (a UserApplication) SaveUser(u *domain.User) error {
 	return a.Repository.Save(u)
 }
 
-func (a UserApplication) FindUser(u domain.User) UserGetResponce {
+func (a UserApplication) FindUser(u *domain.User) UserGetResponce {
 	return a.Repository.Find(u.Token)
 }
 
-func (a UserApplication) UpdateUser(name, token string) error {
-	u, err := domain.NewUser(name, token)
-	if err != nil {
-		return err
-	}
+func (a UserApplication) UpdateUser(u *UserUpdateRequest) error {
 	return a.Repository.Update(u)
 }
 
