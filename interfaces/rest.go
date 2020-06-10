@@ -29,12 +29,10 @@ func (r Rest) creatHandler(c echo.Context) error {
 
 	if err != nil {
 		log.Println(err)
-	} else {
-		err := r.saveHandler(c, req, resp)
 		return err
 	}
 
-	return nil
+	return r.saveHandler(c, req, resp)
 }
 
 func (r Rest) saveHandler(c echo.Context, req *user.UserCreatRequest, resp *user.UserCreatResponse) error {
