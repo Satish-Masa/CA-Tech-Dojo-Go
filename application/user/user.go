@@ -5,32 +5,13 @@ import (
 
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/repository"
+	"github.com/Satish-Masa/CA-Tech-Dojo-Go/infrastructure"
+	"github.com/Satish-Masa/CA-Tech-Dojo-Go/interfaces"
 	"github.com/dgrijalva/jwt-go"
 )
 
 type UserApplication struct {
 	Repository repository.UserRepository
-}
-
-type UserCreatRequest struct {
-	Name string `json: "name"`
-}
-
-type UserCreatResponse struct {
-	Token string `json: "token"`
-}
-
-type UserGetResponce struct {
-	Name string `json: "name"`
-}
-
-type UserUpdateRequest struct {
-	Name  string `json: "name"`
-	Token string `json: "token"`
-}
-
-type CharacterListResponse struct {
-	Characters []UserCharacter `json: "characters"`
 }
 
 type UserCharacter struct {
@@ -53,29 +34,27 @@ func creatToken(name string) (string, error) {
 	return tokenString, nil
 }
 
-func FetchToken(u *UserCreatRequest) (*UserCreatResponse, error) {
-	token, err := creatToken(u.Name)
+func FetchToken(u *interfaces.UserCreatRequest) (token string, err error) {
+	token, err = creatToken(u.Name)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return &UserCreatResponse{
-		Token: token,
-	}, nil
+	return token, nil
 }
 
-func (a UserApplication) SaveUser(u *domain.User) error {
+func (a UserApplication) SaveUser(u *domain.User) (interfaces.UserCreatRequest, error) {
 	return a.Repository.Save(u)
 }
 
-func (a UserApplication) FindUser(u *domain.User) UserGetResponce {
-	return a.Repository.Find(u.Token)
+func (a UserApplication) FindUser(u *domain.User) infrastructure.UserGetResponce {
+	return a.Repository.Find(u)
 }
 
-func (a UserApplication) UpdateUser(u *UserUpdateRequest) error {
+func (a UserApplication) UpdateUser(u *interfaces.UserUpdateRequest) error {
 	return a.Repository.Update(u)
 }
 
-func (a UserApplication) GetList(u domain.User) CharacterListResponse {
-	return a.Repository.FindChara(u.Token)
-}
+/* func (a UserApplication) GetList(u domain.User) (CharacterListResponse, error) {
+	return infrastructure.FindChara(u.Token)
+} */
