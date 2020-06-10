@@ -18,25 +18,30 @@ type Rest struct {
 	GachaRepository repository.CharacterRepository
 }
 
+type UserCreatRequest struct {
+	Name string `json: "name"`
+}
+
+type UserUpdateRequest struct {
+	Name  string `json: "name"`
+	Token string `json: "token"`
+}
+
 func (r Rest) creatHandler(c echo.Context) error {
-	req := new(user.UserCreatRequest)
+	req := new(UserCreatRequest)
 
 	if err := c.Bind(req); err != nil {
 		return err
 	}
 
-	resp, err := user.FetchToken(req)
+	token, err := user.FetchToken(req)
 
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	return r.saveHandler(c, req, resp)
-}
-
-func (r Rest) saveHandler(c echo.Context, req *user.UserCreatRequest, resp *user.UserCreatResponse) error {
-	u, err := domain.NewUser(req.Name, resp.Token)
+	u, err := domain.NewUser(req.Name, token)
 	if err != nil {
 		return err
 	}
@@ -45,7 +50,7 @@ func (r Rest) saveHandler(c echo.Context, req *user.UserCreatRequest, resp *user
 		Repository: r.UserRepository,
 	}
 
-	err = application.SaveUser(u)
+	resp, err := application.SaveUser(u)
 	if err != nil {
 		return err
 	}
@@ -70,7 +75,7 @@ func (r Rest) getHandler(c echo.Context) error {
 }
 
 func (r Rest) updateHandler(c echo.Context) error {
-	req := new(user.UserUpdateRequest)
+	req := new(UserUpdateRequest)
 
 	if err := c.Bind(req); err != nil {
 		return err
