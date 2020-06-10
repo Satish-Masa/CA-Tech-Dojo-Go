@@ -1,55 +1,49 @@
 package infrastructure
 
 import (
-	"fmt"
-	"log"
-
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/user"
-	"github.com/Satish-Masa/CA-Tech-Dojo-Go/config"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain"
+	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/repository"
 	"github.com/jinzhu/gorm"
 )
 
-func ConnectDB() (*gorm.DB, error) {
-	tmp := "%s:%s@%s/%s"
-	connect := fmt.Sprintf(tmp, config.Config.DbUser, config.Config.Password, config.Config.Tcp, config.Config.DbName)
-	driver := config.Config.SQLDriver
-	db, err := gorm.Open(driver, connect)
-	return db, err
+type userRepository struct {
+	conn *gorm.DB
 }
 
-func Save(u *domain.User) error {
-	db, err := ConnectDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	err = db.Create(&u).Error
-	if err != nil {
-		return err
-	}
-
-	return nil
+type UserGetResponce struct {
+	Name string `json: "name"`
 }
 
-func Find(token string) *user.UserGetResponce {
-	db, err := ConnectDB()
+type UserCreatResponse struct {
+	Token string `json: "token"`
+}
+
+type CharacterListResponse struct {
+	Characters []user.UserCharacter `json: "characters"`
+}
+
+func NewUserRepository(conn *gorm.DB) repository.UserRepository {
+	return &userRepository{conn: conn}
+}
+
+func (i *userRepository) Save(u *domain.User) (*UserCreatResponse, error) {
+	err := i.conn.Create(&u).Error
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
-	defer db.Close()
-	resp := new(user.UserGetResponce)
-	db.First(&resp, "name=?", token)
+
+	return &UserCreatResponse{Token: u.Token}, nil
+}
+
+func (i *userRepository) Find(u *domain.User) *UserGetResponce {
+	resp := new(UserGetResponce)
+	i.conn.First(&resp, "name=?", u.Token)
 	return resp
 }
 
-func Update(u *domain.User) error {
-	db, err := ConnectDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	err = db.Model(&u).Where("token=?", u.Token).Update("name", u.Name).Error
+func (i *userRepository) Update(u *user.UserUpdateRequest) error {
+	err := i.conn.Model(&u).Where("token=?", u.Token).Update("name", u.Name).Error
 	if err != nil {
 		return err
 	}
