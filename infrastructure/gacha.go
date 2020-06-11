@@ -2,39 +2,26 @@ package infrastructure
 
 import (
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain"
+	"github.com/jinzhu/gorm"
 )
 
-func CharaCount() (int, error) {
-	db, err := ConnectDB()
-	if err != nil {
-		return -1, err
-	}
-	defer db.Close()
-	var count int
-	db.Table("character").Count(&count)
+type gachaRepository struct {
+	conn *gorm.DB
+}
 
+func (g *gachaRepository) CharaCount() (count int, err error) {
+	g.conn.Table("character").Count(&count)
 	return count, nil
 }
 
-func FindChara(num int) (string, error) {
-	db, err := ConnectDB()
-	if err != nil {
-		return "", err
-	}
-	defer db.Close()
+func (g *gachaRepository) FindChara(num int) (string, error) {
 	var chara domain.Character
-	db.Where("characterID=?", num).Find(&chara)
-
+	g.conn.Where("characterID=?", num).Find(&chara)
 	return chara.Name, nil
 }
 
-func UpdateChar(chara domain.Character) error {
-	db, err := ConnectDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	err = db.Create(&chara).Error
+func (g *gachaRepository) UpdateChar(chara domain.Character) error {
+	err := g.conn.Create(&chara).Error
 	if err != nil {
 		return err
 	}
