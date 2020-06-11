@@ -26,5 +26,5 @@ func main() {
 
 	repo := infrastructure.NewUserRepository(db)
 	rest := &interfaces.Rest{UserRepository: repo, GachaRepository: repo}
-	_ = rest.Start()
+	rest.Start()
 }
