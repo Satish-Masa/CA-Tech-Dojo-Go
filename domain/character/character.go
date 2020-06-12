@@ -1,4 +1,4 @@
-package domain
+package character
 
 type Character struct {
 	UserCharacterID string `json: "userCharacterID"`
