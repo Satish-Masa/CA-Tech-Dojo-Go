@@ -4,6 +4,7 @@ import (
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/user"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/repository"
+	"github.com/Satish-Masa/CA-Tech-Dojo-Go/interfaces"
 	"github.com/jinzhu/gorm"
 )
 
@@ -42,7 +43,7 @@ func (i *userRepository) Find(u *domain.User) *UserGetResponce {
 	return resp
 }
 
-func (i *userRepository) Update(u *user.UserUpdateRequest) error {
+func (i *userRepository) Update(u *interfaces.UserUpdateRequest) error {
 	err := i.conn.Model(&u).Where("token=?", u.Token).Update("name", u.Name).Error
 	if err != nil {
 		return err
