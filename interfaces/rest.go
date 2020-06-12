@@ -9,14 +9,14 @@ import (
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/gacha"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/user"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/config"
-	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain"
-	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/repository"
+	domainCharacter "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/character"
+	domainUser "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/user"
 	"github.com/labstack/echo/v4"
 )
 
 type Rest struct {
-	UserRepository  repository.UserRepository
-	GachaRepository repository.CharacterRepository
+	UserRepository  domainUser.UserRepository
+	GachaRepository domainCharacter.CharacterRepository
 }
 
 type UserCreatRequest struct {
@@ -118,7 +118,10 @@ func (r Rest) gachaHandler(c echo.Context) error {
 		}
 	}
 
-	resp := application.Gacha(req, token)
+	resp, err := application.Gacha(req, token)
+	if err != nil {
+		return err
+	}
 
 	return c.JSON(http.StatusOK, resp)
 }
