@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/auth"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/gacha"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/user"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/config"
@@ -27,14 +28,24 @@ type UserUpdateRequest struct {
 	Token string `json: "token"`
 }
 
+type GachaDrawRequest struct {
+	Times int `json: "times"`
+}
+
 func (r Rest) creatHandler(c echo.Context) error {
 	req := new(UserCreatRequest)
-
 	if err := c.Bind(req); err != nil {
 		return err
 	}
 
-	token, err := user.FetchToken(req)
+	if req.Name == "" {
+		return &echo.HTTPError{
+			Code:    http.StatusBadRequest,
+			Message: "invalid name",
+		}
+	}
+
+	token, err := auth.FetchToken(req)
 
 	if err != nil {
 		log.Println(err)
@@ -89,7 +100,7 @@ func (r Rest) updateHandler(c echo.Context) error {
 }
 
 func (r Rest) gachaHandler(c echo.Context) error {
-	req := new(gacha.GachaDrawRequest)
+	req := new(GachaDrawRequest)
 
 	if err := c.Bind(req); err != nil {
 		return err
@@ -99,7 +110,15 @@ func (r Rest) gachaHandler(c echo.Context) error {
 		Repository: r.GachaRepository,
 	}
 
-	resp := application.DoGacha(req)
+	token, err := auth.FindToken(c)
+	if err != nil {
+		return &echo.HTTPError{
+			Code:    http.StatusInternalServerError,
+			Message: "failed to get token",
+		}
+	}
+
+	resp := application.Gacha(req, token)
 
 	return c.JSON(http.StatusOK, resp)
 }
