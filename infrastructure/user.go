@@ -2,8 +2,7 @@ package infrastructure
 
 import (
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/user"
-	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain"
-	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/repository"
+	domainUser "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/user"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/interfaces"
 	"github.com/jinzhu/gorm"
 )
@@ -24,7 +23,7 @@ type CharacterListResponse struct {
 	Characters []user.UserCharacter `json: "characters"`
 }
 
-func NewUserRepository(conn *gorm.DB) repository.UserRepository {
+func NewUserRepository(conn *gorm.DB) domainUser.UserRepository {
 	return &userRepository{conn: conn}
 }
 
