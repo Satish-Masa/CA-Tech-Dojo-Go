@@ -2,19 +2,17 @@ package gacha
 
 import (
 	"math/rand"
+	"net/http"
 	"time"
 
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/repository"
-	"github.com/Satish-Masa/CA-Tech-Dojo-Go/infrastructure"
+	"github.com/Satish-Masa/CA-Tech-Dojo-Go/interfaces"
+	"github.com/labstack/echo/v4"
 )
 
 type GachaApplication struct {
 	Repository repository.CharacterRepository
-}
-
-type GachaDrawRequest struct {
-	Times int `json: "times"`
 }
 
 type GachaDrawResponse struct {
@@ -26,46 +24,89 @@ type GachaResult struct {
 	Name        string `json: "name"`
 }
 
-// DoGacha()で回数のリクエストを受け取り、結果のレスポンスを返す。
-func (r GachaApplication) DoGacha(g *GachaDrawRequest) GachaDrawResponse {
-	times := g.Times
-	result := r.run(times)
-	var resp GachaDrawResponse
-	resp.Results = result
-
-	return resp
-}
-
-// ガチャの結果を決める抽選するメソッド
-func (r GachaApplication) run(times int) []GachaResult {
-	count, _ := infrastructure.CharaCount()
-	result := make([]GachaResult, times)
-
-	for i := 0; i < times; i++ {
-		var res GachaResult
-		rand.Seed(time.Now().UnixNano())
-		res.CharacterID = rand.Intn(count)
-		res.Name, _ = infrastructure.FindChara(res.CharacterID)
-		err := r.update(res)
-		if err != nil {
-			panic(err)
+func (r GachaApplication) Gacha(g *interfaces.GachaDrawRequest, uid string) (result GachaDrawResponse, err error) {
+	if g.Times < 1 {
+		return GachaDrawResponse{}, &echo.HTTPError{
+			Code:    http.StatusBadRequest,
+			Message: "invalied time",
 		}
 	}
 
-	return result
+	count, err := r.Repository.CharaCount()
+	if err != nil {
+		return GachaDrawResponse{}, &echo.HTTPError{
+			Code:    http.StatusInternalServerError,
+			Message: "faild to count character",
+		}
+	}
+
+	var res []GachaResult
+
+	if g.Times == 1 {
+		res, err := r.gachaOneTime(count)
+		if err != nil {
+			return GachaDrawResponse{}, err
+		}
+		character := domain.NewCharacter(uid, res[0].CharacterID, res[0].Name)
+		err = r.Repository.UpdateChara(*character)
+		if err != nil {
+			return GachaDrawResponse{}, &echo.HTTPError{
+				Code:    http.StatusInternalServerError,
+				Message: "failed to update",
+			}
+		}
+	} else {
+		res, err := r.gachaManyTime(count, g.Times)
+		if err != nil {
+			return GachaDrawResponse{}, err
+		}
+
+		for i := 0; i < g.Times; i++ {
+			character := domain.NewCharacter(uid, res[i].CharacterID, res[i].Name)
+			err := r.Repository.UpdateChara(*character)
+			if err != nil {
+				return GachaDrawResponse{}, &echo.HTTPError{
+					Code:    http.StatusInternalServerError,
+					Message: "failed to update",
+				}
+			}
+		}
+	}
+
+	result.Results = res
+
+	return result, nil
 }
 
-// データベースにガチャの結果を保存するメソッド
-func (r GachaApplication) update(g GachaResult) error {
-	var chara domain.Character
-	chara.CharacterID = g.CharacterID
-	// ガチャをしたUserのTokenをUserCharacterIDに入れる
-	// chara.UserCharacterID = token
-	chara.Name = g.Name
-
-	err := infrastructure.UpdateChar(chara)
+func (r GachaApplication) gachaOneTime(count int) (result []GachaResult, err error) {
+	result[0], err = r.doGacha(count)
 	if err != nil {
-		return err
+		return []GachaResult{}, err
 	}
-	return nil
+
+	return result, nil
+}
+
+func (r GachaApplication) gachaManyTime(count, times int) ([]GachaResult, error) {
+	result := make([]GachaResult, times)
+	for i := 0; i < times; i++ {
+		chara, err := r.doGacha(count)
+		if err != nil {
+			return []GachaResult{}, err
+		}
+		result[i] = chara
+	}
+
+	return result, nil
+}
+
+func (r GachaApplication) doGacha(count int) (result GachaResult, err error) {
+	rand.Seed(time.Now().UnixNano())
+	result.CharacterID = rand.Intn(count)
+	result.Name, err = r.Repository.FindChara(result.CharacterID)
+	if err != nil {
+		return GachaResult{}, err
+	}
+
+	return result, nil
 }
