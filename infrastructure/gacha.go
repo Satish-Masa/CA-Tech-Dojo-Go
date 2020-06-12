@@ -20,7 +20,7 @@ func (g *gachaRepository) FindChara(num int) (string, error) {
 	return chara.Name, nil
 }
 
-func (g *gachaRepository) UpdateChar(chara domain.Character) error {
+func (g *gachaRepository) UpdateChara(chara domain.Character) error {
 	err := g.conn.Create(&chara).Error
 	if err != nil {
 		return err
