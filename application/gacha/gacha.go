@@ -5,8 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain"
-	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/repository"
+	domainCharacter "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/character"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/interfaces"
 	"github.com/labstack/echo/v4"
 )
@@ -47,7 +46,7 @@ func (r GachaApplication) Gacha(g *interfaces.GachaDrawRequest, uid string) (res
 		if err != nil {
 			return GachaDrawResponse{}, err
 		}
-		character := domain.NewCharacter(uid, res[0].CharacterID, res[0].Name)
+		character := domainCharacter.NewCharacter(uid, res[0].CharacterID, res[0].Name)
 		err = r.Repository.UpdateChara(*character)
 		if err != nil {
 			return GachaDrawResponse{}, &echo.HTTPError{
@@ -62,7 +61,7 @@ func (r GachaApplication) Gacha(g *interfaces.GachaDrawRequest, uid string) (res
 		}
 
 		for i := 0; i < g.Times; i++ {
-			character := domain.NewCharacter(uid, res[i].CharacterID, res[i].Name)
+			character := domainCharacter.NewCharacter(uid, res[i].CharacterID, res[i].Name)
 			err := r.Repository.UpdateChara(*character)
 			if err != nil {
 				return GachaDrawResponse{}, &echo.HTTPError{
