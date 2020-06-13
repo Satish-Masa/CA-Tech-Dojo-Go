@@ -2,7 +2,6 @@ package interfaces
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/auth"
@@ -45,23 +44,18 @@ func (r Rest) creatHandler(c echo.Context) error {
 		}
 	}
 
-	token, err := auth.FetchToken(req)
-
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	u, err := domainUser.NewUser(req.Name, token)
-	if err != nil {
-		return err
-	}
+	u := domainUser.NewUser(req.Name)
 
 	application := user.UserApplication{
 		Repository: r.UserRepository,
 	}
 
-	resp, err := application.SaveUser(u)
+	err := application.SaveUser(u)
+	if err != nil {
+		return err
+	}
+
+	resp, err := auth.FetchToken(u)
 	if err != nil {
 		return err
 	}
@@ -70,33 +64,30 @@ func (r Rest) creatHandler(c echo.Context) error {
 }
 
 func (r Rest) getHandler(c echo.Context) error {
-	u := new(domainUser.User)
-
-	if err := c.Bind(u); err != nil {
-		return err
-	}
+	uid := auth.FindUserID(c)
 
 	application := user.UserApplication{
 		Repository: r.UserRepository,
 	}
 
-	resp := application.FindUser(u)
+	resp := application.FindUser(uid)
 
 	return c.JSON(http.StatusOK, resp)
 }
 
 func (r Rest) updateHandler(c echo.Context) error {
 	req := new(UserUpdateRequest)
-
 	if err := c.Bind(req); err != nil {
 		return err
 	}
+
+	uid := auth.FindUserID(c)
 
 	application := user.UserApplication{
 		Repository: r.UserRepository,
 	}
 
-	return application.UpdateUser(req)
+	return application.UpdateUser(req, uid)
 }
 
 func (r Rest) gachaHandler(c echo.Context) error {
@@ -110,7 +101,7 @@ func (r Rest) gachaHandler(c echo.Context) error {
 		Repository: r.GachaRepository,
 	}
 
-	token, err := auth.FindToken(c)
+	token := auth.FindToken(c)
 	if err != nil {
 		return &echo.HTTPError{
 			Code:    http.StatusInternalServerError,
