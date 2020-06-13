@@ -15,6 +15,10 @@ type UserGetResponce struct {
 	Name string `json: "name"`
 }
 
+type UserCreatResponse struct {
+	Token string `json: "token"`
+}
+
 type CharacterListResponse struct {
 	Characters []user.UserCharacter `json: "characters"`
 }
