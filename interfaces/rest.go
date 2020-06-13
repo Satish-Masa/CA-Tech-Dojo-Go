@@ -52,7 +52,7 @@ func (r Rest) creatHandler(c echo.Context) error {
 		return err
 	}
 
-	u, err := domain.NewUser(req.Name, token)
+	u, err := domainUser.NewUser(req.Name, token)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (r Rest) creatHandler(c echo.Context) error {
 }
 
 func (r Rest) getHandler(c echo.Context) error {
-	u := new(domain.User)
+	u := new(domainUser.User)
 
 	if err := c.Bind(u); err != nil {
 		return err
