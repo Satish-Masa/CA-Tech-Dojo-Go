@@ -4,14 +4,11 @@ import (
 	"net/http"
 
 	domainUser "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/user"
+	"github.com/Satish-Masa/CA-Tech-Dojo-Go/infrastructure"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
-
-type UserCreatResponse struct {
-	Token string `json: "token"`
-}
 
 type jwtCustomClaims struct {
 	UID  int    `json: "uid"`
@@ -26,9 +23,9 @@ var Config = middleware.JWTConfig{
 	SigningKey: signingKey,
 }
 
-func creatToken(u *domainUser.User) (UserCreatResponse, error) {
+func creatToken(u *domainUser.User) (infrastructure.UserCreatResponse, error) {
 	if u.Name == "" {
-		return UserCreatResponse{}, &echo.HTTPError{
+		return infrastructure.UserCreatResponse{}, &echo.HTTPError{
 			Code:    http.StatusUnauthorized,
 			Message: "invalid name",
 		}
@@ -42,22 +39,22 @@ func creatToken(u *domainUser.User) (UserCreatResponse, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
 	t, err := token.SignedString(signingKey)
 	if err != nil {
-		return UserCreatResponse{}, &echo.HTTPError{
+		return infrastructure.UserCreatResponse{}, &echo.HTTPError{
 			Code:    http.StatusInternalServerError,
 			Message: "failed to create the token",
 		}
 	}
 
-	resp := new(UserCreatResponse)
+	resp := new(infrastructure.UserCreatResponse)
 	resp.Token = t
 
 	return *resp, nil
 }
 
-func FetchToken(u *domainUser.User) (resp UserCreatResponse, err error) {
+func FetchToken(u *domainUser.User) (resp infrastructure.UserCreatResponse, err error) {
 	resp, err = creatToken(u)
 	if err != nil {
-		return UserCreatResponse{}, err
+		return infrastructure.UserCreatResponse{}, err
 	}
 
 	return resp, nil
