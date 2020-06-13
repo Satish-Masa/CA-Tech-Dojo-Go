@@ -15,7 +15,7 @@ func (g *gachaRepository) CharaCount() (count int, err error) {
 }
 
 func (g *gachaRepository) FindChara(num int) (string, error) {
-	var chara domain.Character
+	var chara domainCharacter.Character
 	g.conn.Where("characterID=?", num).Find(&chara)
 	return chara.Name, nil
 }
