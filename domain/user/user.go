@@ -1,19 +1,12 @@
 package user
 
-import "fmt"
-
 type User struct {
-	Name  string `json: "name"`
-	Token string `json: "token"`
+	ID   int    `json: "ID" gorm: "praimaly_key"`
+	Name string `json: "name"`
 }
 
-func NewUser(name, token string) (*User, error) {
-	if name == "" {
-		return nil, fmt.Errorf("invalid name")
-	}
-
+func NewUser(name string) *User {
 	return &User{
-		Name:  name,
-		Token: token,
-	}, nil
+		Name: name,
+	}
 }
