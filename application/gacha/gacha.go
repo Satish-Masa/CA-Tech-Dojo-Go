@@ -23,7 +23,7 @@ type GachaResult struct {
 	Name        string `json: "name"`
 }
 
-func (r GachaApplication) Gacha(g *interfaces.GachaDrawRequest, uid string) (result GachaDrawResponse, err error) {
+func (r GachaApplication) Gacha(g *interfaces.GachaDrawRequest, uid int) (result GachaDrawResponse, err error) {
 	if g.Times < 1 {
 		return GachaDrawResponse{}, &echo.HTTPError{
 			Code:    http.StatusBadRequest,
