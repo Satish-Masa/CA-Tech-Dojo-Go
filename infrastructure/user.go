@@ -27,7 +27,7 @@ func NewUserRepository(conn *gorm.DB) domainUser.UserRepository {
 	return &userRepository{conn: conn}
 }
 
-func (i *userRepository) Save(u *domain.User) (*UserCreatResponse, error) {
+func (i *userRepository) Save(u *domainUser.User) (*UserCreatResponse, error) {
 	err := i.conn.Create(&u).Error
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func (i *userRepository) Save(u *domain.User) (*UserCreatResponse, error) {
 	return &UserCreatResponse{Token: u.Token}, nil
 }
 
-func (i *userRepository) Find(u *domain.User) *UserGetResponce {
+func (i *userRepository) Find(u *domainUser.User) *UserGetResponce {
 	resp := new(UserGetResponce)
 	i.conn.First(&resp, "name=?", u.Token)
 	return resp
