@@ -11,7 +11,7 @@ import (
 )
 
 type GachaApplication struct {
-	Repository repository.CharacterRepository
+	Repository domainCharacter.CharacterRepository
 }
 
 type GachaDrawResponse struct {
