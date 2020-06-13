@@ -101,15 +101,9 @@ func (r Rest) gachaHandler(c echo.Context) error {
 		Repository: r.GachaRepository,
 	}
 
-	token := auth.FindToken(c)
-	if err != nil {
-		return &echo.HTTPError{
-			Code:    http.StatusInternalServerError,
-			Message: "failed to get token",
-		}
-	}
+	id := auth.FindUserID(c)
 
-	resp, err := application.Gacha(req, token)
+	resp, err := application.Gacha(req, id)
 	if err != nil {
 		return err
 	}
