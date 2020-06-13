@@ -17,16 +17,16 @@ type UserCharacter struct {
 	Name            string `json: "name"`
 }
 
-func (a UserApplication) SaveUser(u *domain.User) (interfaces.UserCreatRequest, error) {
+func (a UserApplication) SaveUser(u *domain.User) error {
 	return a.Repository.Save(u)
 }
 
-func (a UserApplication) FindUser(u *domain.User) infrastructure.UserGetResponce {
-	return a.Repository.Find(u)
+func (a UserApplication) FindUser(uid int) infrastructure.UserGetResponce {
+	return a.Repository.Find(uid)
 }
 
-func (a UserApplication) UpdateUser(u *interfaces.UserUpdateRequest) error {
-	return a.Repository.Update(u)
+func (a UserApplication) UpdateUser(u *interfaces.UserUpdateRequest, id int) error {
+	return a.Repository.Update(u, id)
 }
 
 /* func (a UserApplication) GetList(u domain.User) (CharacterListResponse, error) {
