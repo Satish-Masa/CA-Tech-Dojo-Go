@@ -23,12 +23,19 @@ type UserCreatRequest struct {
 }
 
 type UserUpdateRequest struct {
-	Name  string `json: "name"`
-	Token string `json: "token"`
+	Name string `json: "name"`
 }
 
 type GachaDrawRequest struct {
 	Times int `json: "times"`
+}
+
+type UserGetResponce struct {
+	Name string `json: "name"`
+}
+
+type UserCreatResponse struct {
+	Token string `json: "token"`
 }
 
 func (r Rest) creatHandler(c echo.Context) error {
@@ -70,10 +77,12 @@ func (r Rest) getHandler(c echo.Context) error {
 		Repository: r.UserRepository,
 	}
 
-	resp, err := application.FindUser(uid)
+	name, err := application.FindUser(uid)
 	if err != nil {
 		return err
 	}
+
+	resp := &UserGetResponce{Name: name}
 
 	return c.JSON(http.StatusOK, resp)
 }
@@ -90,7 +99,7 @@ func (r Rest) updateHandler(c echo.Context) error {
 		Repository: r.UserRepository,
 	}
 
-	return application.UpdateUser(req, uid)
+	return application.UpdateUser(req.Name, uid)
 }
 
 func (r Rest) gachaHandler(c echo.Context) error {
