@@ -1,13 +1,20 @@
-package application
+package user
 
-import (
-	"log"
+import domainUser "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/user"
 
-	"github.com/Satish-Masa/CA-Tech-Dojo-Go/infrastructure"
-	"github.com/dgrijalva/jwt-go"
-)
+type UserApplication struct {
+	Repository domainUser.UserRepository
+}
 
 type UserCreatRequest struct {
+	Name string `json: "name"`
+}
+
+type UserUpdateRequest struct {
+	Name string `json: "name"`
+}
+
+type UserGetResponce struct {
 	Name string `json: "name"`
 }
 
@@ -15,48 +22,24 @@ type UserCreatResponse struct {
 	Token string `json: "token"`
 }
 
-type UserGetResponce struct {
-	Name string `json: "name"`
+func (a UserApplication) SaveUser(u *domainUser.User) error {
+	return a.Repository.Save(u)
 }
 
-type UserUpdateRequest struct {
-	Name  string `json: "name"`
-	Token string `json: "token"`
-}
-
-func creatToken(name string) (string, error) {
-	var err error
-	secret := "secret"
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"name": name,
-		"iss":  "__init__",
-	})
-	tokenString, err := token.SignedString([]byte(secret))
+func (a UserApplication) FindUser(uid int) (UserGetResponce, error) {
+	user, err := a.Repository.Find(uid)
 	if err != nil {
-		log.Fatal(err)
+		return UserGetResponce{}, err
 	}
-	return tokenString, nil
+	name := user.Name
+	resp := UserGetResponce{Name: name}
+	return resp, nil
 }
 
-func FetchToken(name string) *UserCreatResponse {
-	token, err := creatToken(name)
-	if err != nil {
-		log.Println(err)
-	}
-	resp := new(UserCreatResponse)
-	resp.Token = token
-
-	return &resp
+func (a UserApplication) UpdateUser(name string, id int) error {
+	return a.Repository.Update(name, id)
 }
 
-func SaveUser(name, token string) error {
-	return infrastructure.SaveUser(name, token)
-}
-
-func SearchUser(token string) *UserGetResponce {
-	return infrastructure.SearchUser(token)
-}
-
-func UpdateUser(name, token string) error {
-	return infrastructure.UpdateUser(name, token)
-}
+/* func (a UserApplication) GetList(u domain.User) (CharacterListResponse, error) {
+	return infrastructure.FindChara(u.Token)
+} */
