@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	domainUser "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/user"
-	"github.com/Satish-Masa/CA-Tech-Dojo-Go/interfaces"
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
 )
@@ -39,15 +38,16 @@ func (i *userRepository) Save(u *domainUser.User) error {
 	return nil
 }
 
-func (i *userRepository) Find(id int) (string, error) {
-	err := i.conn.First(&domainUser.User, "name=?", id).Error
+func (i *userRepository) Find(id int) (domainUser.User, error) {
+	var user domainUser.User
+	err := i.conn.First(user, "name=?", id).Error
 	if err != nil {
-		return &interfaces.UserGetResponce{}, &echo.HTTPError{
+		return domainUser.User{}, &echo.HTTPError{
 			Code:    http.StatusInternalServerError,
 			Message: "failed to find the user",
 		}
 	}
-	return domainUser.User.Name, nil
+	return user, nil
 }
 
 func (i *userRepository) Update(name string, id int) error {
