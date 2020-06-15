@@ -1,10 +1,12 @@
 package infrastructure
 
 import (
-	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/user"
+	"net/http"
+
 	domainUser "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/user"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/interfaces"
 	"github.com/jinzhu/gorm"
+	"github.com/labstack/echo/v4"
 )
 
 type userRepository struct {
@@ -19,8 +21,14 @@ type UserCreatResponse struct {
 	Token string `json: "token"`
 }
 
+type UserCharacter struct {
+	UserCharacterID string `json: "userCharacterID"`
+	CharacterID     int    `json: "characterID"`
+	Name            string `json: "name"`
+}
+
 type CharacterListResponse struct {
-	Characters []user.UserCharacter `json: "characters"`
+	Characters []UserCharacter `json: "characters"`
 }
 
 func NewUserRepository(conn *gorm.DB) domainUser.UserRepository {
@@ -30,22 +38,34 @@ func NewUserRepository(conn *gorm.DB) domainUser.UserRepository {
 func (i *userRepository) Save(u *domainUser.User) error {
 	err := i.conn.Create(&u).Error
 	if err != nil {
-		return err
+		return &echo.HTTPError{
+			Code:    http.StatusInternalServerError,
+			Message: "failed to save the user",
+		}
 	}
 
 	return nil
 }
 
-func (i *userRepository) Find(id int) *UserGetResponce {
+func (i *userRepository) Find(id int) (*UserGetResponce, error) {
 	resp := new(UserGetResponce)
-	i.conn.First(&resp, "name=?", id)
-	return resp
+	err := i.conn.First(&resp, "name=?", id).Error
+	if err != nil {
+		return &UserGetResponce{}, &echo.HTTPError{
+			Code:    http.StatusInternalServerError,
+			Message: "failed to find the user",
+		}
+	}
+	return resp, nil
 }
 
 func (i *userRepository) Update(u *interfaces.UserUpdateRequest, id int) error {
-	err := i.conn.Model(&domainUser.User).Where("id=?", id).Update("name", u.Name).Error
+	err := i.conn.Model(&domainUser.User{}).Where("id=?", id).Update("name", u.Name).Error
 	if err != nil {
-		return err
+		return &echo.HTTPError{
+			Code:    http.StatusInternalServerError,
+			Message: "failed to update the user",
+		}
 	}
 	return nil
 }
