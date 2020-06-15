@@ -70,7 +70,10 @@ func (r Rest) getHandler(c echo.Context) error {
 		Repository: r.UserRepository,
 	}
 
-	resp := application.FindUser(uid)
+	resp, err := application.FindUser(uid)
+	if err != nil {
+		return err
+	}
 
 	return c.JSON(http.StatusOK, resp)
 }
