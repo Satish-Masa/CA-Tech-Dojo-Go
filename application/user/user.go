@@ -1,20 +1,39 @@
 package user
 
-import (
-	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain"
-	"github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/repository"
-)
+import domainUser "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/user"
 
 type UserApplication struct {
-	Repository repository.UserRepository
+	Repository domainUser.UserRepository
 }
 
-func (a UserApplication) SaveUser(u *domain.User) error {
+type UserCreatRequest struct {
+	Name string `json: "name"`
+}
+
+type UserUpdateRequest struct {
+	Name string `json: "name"`
+}
+
+type UserGetResponce struct {
+	Name string `json: "name"`
+}
+
+type UserCreatResponse struct {
+	Token string `json: "token"`
+}
+
+func (a UserApplication) SaveUser(u *domainUser.User) error {
 	return a.Repository.Save(u)
 }
 
-func (a UserApplication) FindUser(uid int) (string, error) {
-	return a.Repository.Find(uid)
+func (a UserApplication) FindUser(uid int) (UserGetResponce, error) {
+	user, err := a.Repository.Find(uid)
+	if err != nil {
+		return UserGetResponce{}, err
+	}
+	name := user.Name
+	resp := UserGetResponce{Name: name}
+	return resp, nil
 }
 
 func (a UserApplication) UpdateUser(name string, id int) error {
