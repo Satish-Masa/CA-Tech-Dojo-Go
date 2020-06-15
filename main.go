@@ -24,7 +24,8 @@ func main() {
 	}
 	defer db.Close()
 
-	repo := infrastructure.NewUserRepository(db)
-	rest := &interfaces.Rest{UserRepository: repo, GachaRepository: repo}
+	user := infrastructure.NewUserRepository(db)
+	gacha := infrastructure.NewGachaRepository(db)
+	rest := &interfaces.Rest{UserRepository: user, GachaRepository: gacha}
 	rest.Start()
 }
