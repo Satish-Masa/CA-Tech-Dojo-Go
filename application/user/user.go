@@ -11,17 +11,11 @@ type UserApplication struct {
 	Repository repository.UserRepository
 }
 
-type UserCharacter struct {
-	UserCharacterID string `json: "userCharacterID"`
-	CharacterID     int    `json: "characterID"`
-	Name            string `json: "name"`
-}
-
 func (a UserApplication) SaveUser(u *domain.User) error {
 	return a.Repository.Save(u)
 }
 
-func (a UserApplication) FindUser(uid int) infrastructure.UserGetResponce {
+func (a UserApplication) FindUser(uid int) (infrastructure.UserGetResponce, error) {
 	return a.Repository.Find(uid)
 }
 
