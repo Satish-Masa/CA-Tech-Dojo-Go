@@ -33,10 +33,7 @@ func (r GachaApplication) Gacha(g *interfaces.GachaDrawRequest, uid int) (result
 
 	count, err := r.Repository.CharaCount()
 	if err != nil {
-		return GachaDrawResponse{}, &echo.HTTPError{
-			Code:    http.StatusInternalServerError,
-			Message: "faild to count character",
-		}
+		return GachaDrawResponse{}, err
 	}
 
 	var res []GachaResult
@@ -47,12 +44,9 @@ func (r GachaApplication) Gacha(g *interfaces.GachaDrawRequest, uid int) (result
 			return GachaDrawResponse{}, err
 		}
 		character := domainCharacter.NewCharacter(uid, res[0].CharacterID, res[0].Name)
-		err = r.Repository.UpdateChara(*character)
+		err = r.Repository.CreateChara(*character)
 		if err != nil {
-			return GachaDrawResponse{}, &echo.HTTPError{
-				Code:    http.StatusInternalServerError,
-				Message: "failed to update",
-			}
+			return GachaDrawResponse{}, err
 		}
 	} else {
 		res, err := r.gachaManyTime(count, g.Times)
@@ -62,12 +56,9 @@ func (r GachaApplication) Gacha(g *interfaces.GachaDrawRequest, uid int) (result
 
 		for i := 0; i < g.Times; i++ {
 			character := domainCharacter.NewCharacter(uid, res[i].CharacterID, res[i].Name)
-			err := r.Repository.UpdateChara(*character)
+			err := r.Repository.CreateChara(*character)
 			if err != nil {
-				return GachaDrawResponse{}, &echo.HTTPError{
-					Code:    http.StatusInternalServerError,
-					Message: "failed to update",
-				}
+				return GachaDrawResponse{}, err
 			}
 		}
 	}
