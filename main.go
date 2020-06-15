@@ -9,6 +9,7 @@ import (
 	domainUser "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/user"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/infrastructure"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/interfaces"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 )
 
