@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/auth"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/gacha"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/user"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/config"
@@ -18,28 +17,8 @@ type Rest struct {
 	GachaRepository domainCharacter.CharacterRepository
 }
 
-type UserCreatRequest struct {
-	Name string `json: "name"`
-}
-
-type UserUpdateRequest struct {
-	Name string `json: "name"`
-}
-
-type GachaDrawRequest struct {
-	Times int `json: "times"`
-}
-
-type UserGetResponce struct {
-	Name string `json: "name"`
-}
-
-type UserCreatResponse struct {
-	Token string `json: "token"`
-}
-
 func (r Rest) creatHandler(c echo.Context) error {
-	req := new(UserCreatRequest)
+	req := new(user.UserCreatRequest)
 	if err := c.Bind(req); err != nil {
 		return err
 	}
@@ -62,7 +41,7 @@ func (r Rest) creatHandler(c echo.Context) error {
 		return err
 	}
 
-	resp, err := auth.FetchToken(u)
+	resp, err := FetchToken(u)
 	if err != nil {
 		return err
 	}
@@ -71,29 +50,27 @@ func (r Rest) creatHandler(c echo.Context) error {
 }
 
 func (r Rest) getHandler(c echo.Context) error {
-	uid := auth.FindUserID(c)
+	uid := FindUserID(c)
 
 	application := user.UserApplication{
 		Repository: r.UserRepository,
 	}
 
-	name, err := application.FindUser(uid)
+	resp, err := application.FindUser(uid)
 	if err != nil {
 		return err
 	}
-
-	resp := &UserGetResponce{Name: name}
 
 	return c.JSON(http.StatusOK, resp)
 }
 
 func (r Rest) updateHandler(c echo.Context) error {
-	req := new(UserUpdateRequest)
+	req := new(user.UserUpdateRequest)
 	if err := c.Bind(req); err != nil {
 		return err
 	}
 
-	uid := auth.FindUserID(c)
+	uid := FindUserID(c)
 
 	application := user.UserApplication{
 		Repository: r.UserRepository,
@@ -103,8 +80,7 @@ func (r Rest) updateHandler(c echo.Context) error {
 }
 
 func (r Rest) gachaHandler(c echo.Context) error {
-	req := new(GachaDrawRequest)
-
+	req := new(gacha.GachaDrawRequest)
 	if err := c.Bind(req); err != nil {
 		return err
 	}
@@ -113,9 +89,9 @@ func (r Rest) gachaHandler(c echo.Context) error {
 		Repository: r.GachaRepository,
 	}
 
-	id := auth.FindUserID(c)
+	id := FindUserID(c)
 
-	resp, err := application.Gacha(req, id)
+	resp, err := application.Gacha(req.Times, id)
 	if err != nil {
 		return err
 	}
