@@ -7,6 +7,6 @@ import (
 
 type UserRepository interface {
 	Save(*User) (infrastructure.UserCreatResponse, error)
-	Find(*User) infrastructure.UserGetResponce
+	Find(*User) (infrastructure.UserGetResponce, error)
 	Update(*interfaces.UserUpdateRequest) error
 }
