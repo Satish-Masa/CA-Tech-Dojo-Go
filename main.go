@@ -5,6 +5,8 @@ import (
 	"log"
 
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/config"
+	domainChara "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/character"
+	domainUser "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/user"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/infrastructure"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/interfaces"
 	"github.com/jinzhu/gorm"
@@ -23,6 +25,9 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
+
+	db.AutoMigrate(&domainUser.User{})
+	db.AutoMigrate(&domainChara.Character{})
 
 	user := infrastructure.NewUserRepository(db)
 	gacha := infrastructure.NewGachaRepository(db)
