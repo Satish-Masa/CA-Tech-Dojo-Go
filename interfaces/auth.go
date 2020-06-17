@@ -7,7 +7,6 @@ import (
 	domainUser "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/user"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
 type jwtCustomClaims struct {
@@ -17,11 +16,6 @@ type jwtCustomClaims struct {
 }
 
 var signingKey = []byte("secret")
-
-var Config = middleware.JWTConfig{
-	Claims:     &jwtCustomClaims{},
-	SigningKey: signingKey,
-}
 
 func createToken(u *domainUser.User) (user.UserCreatResponse, error) {
 	if u.Name == "" {
@@ -36,7 +30,8 @@ func createToken(u *domainUser.User) (user.UserCreatResponse, error) {
 		Name: u.Name,
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
 	t, err := token.SignedString(signingKey)
 	if err != nil {
 		return user.UserCreatResponse{}, &echo.HTTPError{
