@@ -17,7 +17,7 @@ type Rest struct {
 	GachaRepository domainCharacter.CharacterRepository
 }
 
-func (r Rest) creatHandler(c echo.Context) error {
+func (r Rest) createHandler(c echo.Context) error {
 	req := new(user.UserCreatRequest)
 	if err := c.Bind(req); err != nil {
 		return err
@@ -112,7 +112,7 @@ func (r Rest) gachaHandler(c echo.Context) error {
 
 func (r Rest) Start() {
 	e := echo.New()
-	e.POST("/user/creat", r.creatHandler)
+	e.POST("/user/create", r.createHandler)
 	e.GET("/user/get", r.getHandler)
 	e.PUT("/user/update", r.updateHandler)
 	e.POST("/gacha/draw", r.gachaHandler)
