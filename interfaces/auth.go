@@ -7,7 +7,6 @@ import (
 	domainUser "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/user"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
 type jwtCustomClaims struct {
@@ -18,12 +17,7 @@ type jwtCustomClaims struct {
 
 var signingKey = []byte("secret")
 
-var Config = middleware.JWTConfig{
-	Claims:     &jwtCustomClaims{},
-	SigningKey: signingKey,
-}
-
-func creatToken(u *domainUser.User) (user.UserCreatResponse, error) {
+func createToken(u *domainUser.User) (user.UserCreatResponse, error) {
 	if u.Name == "" {
 		return user.UserCreatResponse{}, &echo.HTTPError{
 			Code:    http.StatusUnauthorized,
@@ -36,7 +30,8 @@ func creatToken(u *domainUser.User) (user.UserCreatResponse, error) {
 		Name: u.Name,
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
 	t, err := token.SignedString(signingKey)
 	if err != nil {
 		return user.UserCreatResponse{}, &echo.HTTPError{
@@ -52,7 +47,7 @@ func creatToken(u *domainUser.User) (user.UserCreatResponse, error) {
 }
 
 func FetchToken(u *domainUser.User) (resp user.UserCreatResponse, err error) {
-	resp, err = creatToken(u)
+	resp, err = createToken(u)
 	if err != nil {
 		return user.UserCreatResponse{}, err
 	}
