@@ -23,7 +23,7 @@ var Config = middleware.JWTConfig{
 	SigningKey: signingKey,
 }
 
-func creatToken(u *domainUser.User) (user.UserCreatResponse, error) {
+func createToken(u *domainUser.User) (user.UserCreatResponse, error) {
 	if u.Name == "" {
 		return user.UserCreatResponse{}, &echo.HTTPError{
 			Code:    http.StatusUnauthorized,
@@ -52,7 +52,7 @@ func creatToken(u *domainUser.User) (user.UserCreatResponse, error) {
 }
 
 func FetchToken(u *domainUser.User) (resp user.UserCreatResponse, err error) {
-	resp, err = creatToken(u)
+	resp, err = createToken(u)
 	if err != nil {
 		return user.UserCreatResponse{}, err
 	}
