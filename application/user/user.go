@@ -27,7 +27,7 @@ func (a UserApplication) SaveUser(u *domainUser.User) error {
 }
 
 func (a UserApplication) FindUser(uid int) (UserGetResponce, error) {
-	user, err := a.Repository.Find(&domainUser.User{ID: uid})
+	user, err := a.Repository.Find(uid)
 	if err != nil {
 		return UserGetResponce{}, err
 	}
