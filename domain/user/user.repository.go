@@ -2,6 +2,6 @@ package user
 
 type UserRepository interface {
 	Save(*User) error
-	Find(*User) (User, error)
+	Find(int) (User, error)
 	Update(string, int) error
 }
