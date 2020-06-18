@@ -9,7 +9,8 @@ import (
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/config"
 	domainCharacter "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/character"
 	domainUser "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/user"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 type Rest struct {
@@ -112,9 +113,17 @@ func (r Rest) gachaHandler(c echo.Context) error {
 
 func (r Rest) Start() {
 	e := echo.New()
+
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+
 	e.POST("/user/create", r.createHandler)
-	e.GET("/user/get", r.getHandler)
-	e.PUT("/user/update", r.updateHandler)
+
+	user := e.Group("/user")
+	user.Use(middleware.JWTWithConfig(Config))
+
+	user.GET("/get", r.getHandler)
+	user.PUT("/update", r.updateHandler)
 	e.POST("/gacha/draw", r.gachaHandler)
 	// e.GET("/character/list", listHandler)
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", config.Config.Port)))
