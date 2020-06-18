@@ -4,18 +4,21 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/character"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/gacha"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/user"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/config"
 	domainCharacter "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/character"
 	domainUser "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/user"
+	domainUserCharacter "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/userCharacter"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
 
 type Rest struct {
 	UserRepository  domainUser.UserRepository
-	GachaRepository domainCharacter.CharacterRepository
+	GachaRepository domainUserCharacter.UserCharacterRepository
+	CharaRepository domainCharacter.CharacterRepository
 }
 
 func (r Rest) createHandler(c echo.Context) error {
@@ -90,9 +93,15 @@ func (r Rest) gachaHandler(c echo.Context) error {
 		Repository: r.GachaRepository,
 	}
 
+	charApplication := character.CharacterApplication{
+		Repository: r.CharaRepository,
+	}
+
 	id := FindUserID(c)
 
-	resp, err := application.Gacha(req.Times, id)
+	count, err := charApplication.CountChara()
+
+	resp, err := application.Gacha(req.Times, id, count)
 	if err != nil {
 		return err
 	}
@@ -111,6 +120,33 @@ func (r Rest) gachaHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 } */
 
+func (r Rest) createCharaHandler(c echo.Context) error {
+	req := new(character.CharaCreateRequest)
+	if err := c.Bind(req); err != nil {
+		return err
+	}
+
+	if req.Name == "" {
+		return &echo.HTTPError{
+			Code:    http.StatusBadRequest,
+			Message: "invalid name",
+		}
+	}
+
+	chara := domainCharacter.NewCharacter(req.Name)
+
+	application := character.CharacterApplication{
+		Repository: r.CharaRepository,
+	}
+
+	err := application.CreateChara(chara)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r Rest) Start() {
 	e := echo.New()
 
@@ -118,6 +154,7 @@ func (r Rest) Start() {
 	e.Use(middleware.Recover())
 
 	e.POST("/user/create", r.createHandler)
+	e.POST("/character/create", r.createCharaHandler)
 
 	user := e.Group("/user")
 	user.Use(middleware.JWTWithConfig(Config))

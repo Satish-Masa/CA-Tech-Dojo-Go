@@ -1,7 +1,7 @@
 package user
 
 type User struct {
-	ID   int    `json: "ID" gorm: "praimaly_key"`
+	ID   int    `json: "id" gorm: "praimaly_key"`
 	Name string `json: "name"`
 }
 

@@ -40,7 +40,7 @@ func (i *userRepository) Save(u *domainUser.User) error {
 
 func (i *userRepository) Find(id int) (domainUser.User, error) {
 	var user domainUser.User
-	err := i.conn.First(user, "name=?", id).Error
+	err := i.conn.First(&user, "id = ?", id).Error
 	if err != nil {
 		return domainUser.User{}, &echo.HTTPError{
 			Code:    http.StatusInternalServerError,

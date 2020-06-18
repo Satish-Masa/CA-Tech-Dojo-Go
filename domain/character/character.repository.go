@@ -1,7 +1,7 @@
 package character
 
 type CharacterRepository interface {
-	CharaCount() (int, error)
-	FindChara(int) (string, error)
-	CreateChara(Character) error
+	Count() (int, error)
+	Find(int) (Character, error)
+	Create(*Character) error
 }

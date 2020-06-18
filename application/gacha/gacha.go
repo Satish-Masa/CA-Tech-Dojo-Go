@@ -6,11 +6,13 @@ import (
 	"time"
 
 	domainCharacter "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/character"
+	domainUserCharacter "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/userCharacter"
 	"github.com/labstack/echo/v4"
 )
 
 type GachaApplication struct {
-	Repository domainCharacter.CharacterRepository
+	Repository      domainUserCharacter.UserCharacterRepository
+	CharaRepository domainCharacter.CharacterRepository
 }
 
 type GachaDrawRequest struct {
@@ -26,7 +28,7 @@ type gachaResult struct {
 	Name        string `json: "name"`
 }
 
-func (r GachaApplication) Gacha(times, uid int) (result GachaDrawResponse, err error) {
+func (r GachaApplication) Gacha(times, uid, count int) (result GachaDrawResponse, err error) {
 	if times < 1 {
 		return GachaDrawResponse{}, &echo.HTTPError{
 			Code:    http.StatusBadRequest,
@@ -34,7 +36,6 @@ func (r GachaApplication) Gacha(times, uid int) (result GachaDrawResponse, err e
 		}
 	}
 
-	count, err := r.Repository.CharaCount()
 	if err != nil {
 		return GachaDrawResponse{}, err
 	}
@@ -46,8 +47,8 @@ func (r GachaApplication) Gacha(times, uid int) (result GachaDrawResponse, err e
 		if err != nil {
 			return GachaDrawResponse{}, err
 		}
-		character := domainCharacter.NewCharacter(uid, res[0].CharacterID, res[0].Name)
-		err = r.Repository.CreateChara(*character)
+		character := domainUserCharacter.NewCharacter(uid, res[0].CharacterID, res[0].Name)
+		err = r.Repository.Create(*character)
 		if err != nil {
 			return GachaDrawResponse{}, err
 		}
@@ -58,8 +59,8 @@ func (r GachaApplication) Gacha(times, uid int) (result GachaDrawResponse, err e
 		}
 
 		for i := 0; i < times; i++ {
-			character := domainCharacter.NewCharacter(uid, res[i].CharacterID, res[i].Name)
-			err := r.Repository.CreateChara(*character)
+			character := domainUserCharacter.NewCharacter(uid, res[i].CharacterID, res[i].Name)
+			err := r.Repository.Create(*character)
 			if err != nil {
 				return GachaDrawResponse{}, err
 			}
@@ -96,10 +97,10 @@ func (r GachaApplication) gachaManyTime(count, times int) ([]gachaResult, error)
 func (r GachaApplication) doGacha(count int) (result gachaResult, err error) {
 	rand.Seed(time.Now().UnixNano())
 	result.CharacterID = rand.Intn(count)
-	result.Name, err = r.Repository.FindChara(result.CharacterID)
+	chara, err := r.CharaRepository.Find(count)
+	result.Name = chara.Name
 	if err != nil {
 		return gachaResult{}, err
 	}
-
 	return result, nil
 }
