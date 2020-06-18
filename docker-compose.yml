@@ -7,3 +7,5 @@ db:
     MYSQL_DATABASE: techtrain
     MYSQL_USER: user
     MYSQL_PASSWORD: root
+  security_opt:
+      - seccomp:unconfined
