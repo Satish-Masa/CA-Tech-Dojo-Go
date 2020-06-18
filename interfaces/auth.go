@@ -6,7 +6,8 @@ import (
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/application/user"
 	domainUser "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/user"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 type jwtCustomClaims struct {
@@ -16,6 +17,11 @@ type jwtCustomClaims struct {
 }
 
 var signingKey = []byte("secret")
+
+var Config = middleware.JWTConfig{
+	Claims:     &jwtCustomClaims{},
+	SigningKey: signingKey,
+}
 
 func createToken(u *domainUser.User) (user.UserCreatResponse, error) {
 	if u.Name == "" {
