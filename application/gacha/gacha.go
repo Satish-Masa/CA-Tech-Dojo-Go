@@ -29,6 +29,10 @@ type GachaResult struct {
 	Name        string `json: "name"`
 }
 
+type CharacterListResponse struct {
+	Characters []domainUserCharacter.UserCharacter
+}
+
 func (r GachaApplication) Gacha(times, uid, count int) (GachaDrawResponse, error) {
 
 	if times < 1 {
@@ -83,4 +87,8 @@ func (r GachaApplication) doGacha(count int) (*GachaResult, error) {
 	result.Name = name
 	fmt.Printf("Character: %d | %s\n", result.CharacterID, result.Name)
 	return result, nil
+}
+
+func (r GachaApplication) FindAll(id int) ([]domainUserCharacter.UserCharacter, error) {
+	return r.Repository.FindAll(id)
 }
