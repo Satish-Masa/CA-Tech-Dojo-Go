@@ -96,7 +96,18 @@ func (r GachaApplication) gachaManyTime(count, times int) ([]gachaResult, error)
 
 func (r GachaApplication) doGacha(count int) (result gachaResult, err error) {
 	rand.Seed(time.Now().UnixNano())
-	result.CharacterID = rand.Intn(count)
+	id := rand.Intn(count)
+	ok := true
+	if id == 0 {
+		ok = false
+	}
+	if !ok {
+		id = rand.Intn(count)
+		if id != 0 {
+			ok = true
+		}
+	}
+	result.CharacterID = id
 	chara, err := r.CharaRepository.Find(count)
 	result.Name = chara.Name
 	if err != nil {
