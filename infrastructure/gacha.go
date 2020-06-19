@@ -39,3 +39,13 @@ func (c *gachaRepository) Find(id int) (string, error) {
 	}
 	return chara.Name, nil
 }
+
+func (c *gachaRepository) FindAll(id int) ([]domainUserCharacter.UserCharacter, error) {
+	var charas []domainUserCharacter.UserCharacter
+	err := c.conn.Where("user_character_id = ?", id).Find(&charas).Error
+	if err != nil {
+		return charas, err
+	}
+
+	return charas, nil
+}

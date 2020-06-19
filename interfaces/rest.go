@@ -111,16 +111,20 @@ func (r Rest) gachaHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
-/* func listHandler(c echo.Context) error {
-	req := new(domain.User)
-	if err := c.Bind(req); err != nil {
+func (r Rest) listHandler(c echo.Context) error {
+	uid := FindUserID(c)
+
+	application := gacha.GachaApplication{
+		Repository: r.GachaRepository,
+	}
+
+	resp, err := application.FindAll(uid)
+	if err != nil {
 		return err
 	}
 
-	resp := user.GetList(req)
-
 	return c.JSON(http.StatusOK, resp)
-} */
+}
 
 func (r Rest) createCharaHandler(c echo.Context) error {
 	req := new(character.CharaCreateRequest)
@@ -163,6 +167,6 @@ func (r Rest) Start() {
 	user.GET("/get", r.getHandler)
 	user.PUT("/update", r.updateHandler)
 	user.POST("/gacha", r.gachaHandler)
-	// e.GET("/character/list", listHandler)
+	user.GET("/list", r.listHandler)
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", config.Config.Port)))
 }
