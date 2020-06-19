@@ -29,7 +29,8 @@ type GachaResult struct {
 	Name        string `json: "name"`
 }
 
-func (r GachaApplication) Gacha(times, uid, count int) (result GachaDrawResponse, err error) {
+func (r GachaApplication) Gacha(times, uid, count int) (GachaDrawResponse, error) {
+
 	if times < 1 {
 		return GachaDrawResponse{}, &echo.HTTPError{
 			Code:    http.StatusBadRequest,
@@ -37,38 +38,30 @@ func (r GachaApplication) Gacha(times, uid, count int) (result GachaDrawResponse
 		}
 	}
 
-	charaList := make([]GachaResult, 0, times)
-	for _, chara := range charaList {
-		res, err := r.doGacha(count)
-		if err != nil {
-			return GachaDrawResponse{}, &echo.HTTPError{
-				Code:    http.StatusInternalServerError,
-				Message: "failed to do gacha",
-			}
-		}
-		chara.CharacterID = res.CharacterID
-		fmt.Printf("CharaID: %d\n", chara.CharacterID)
-		chara.Name = res.Name
-		charaList = append(charaList, chara)
-	}
+	charaList := GachaDrawResponse{}
 
-	for _, chara := range charaList {
+	for i := 0; i < times; i++ {
+		chara, err := r.doGacha(count)
+		if err != nil {
+			return GachaDrawResponse{}, err
+		}
+
+		charaList.Results = append(charaList.Results, *chara)
+
 		var userChara domainUserCharacter.UserCharacter
 		userChara.CharacterID = chara.CharacterID
 		userChara.Name = chara.Name
 		userChara.UserCharacterID = uid
-		err := r.Repository.Create(userChara)
+		err = r.Repository.Create(userChara)
 		if err != nil {
 			return GachaDrawResponse{}, err
 		}
 	}
 
-	result.Results = charaList
-
-	return result, nil
+	return charaList, nil
 }
 
-func (r GachaApplication) doGacha(count int) (result GachaResult, err error) {
+func (r GachaApplication) doGacha(count int) (*GachaResult, error) {
 	rand.Seed(time.Now().UnixNano())
 	id := rand.Intn(count)
 	ok := true
@@ -81,11 +74,13 @@ func (r GachaApplication) doGacha(count int) (result GachaResult, err error) {
 			ok = true
 		}
 	}
+	result := new(GachaResult)
 	result.CharacterID = id
-	chara, err := r.CharaRepository.Find(id)
-	result.Name = chara.Name
+	name, err := r.Repository.Find(id)
 	if err != nil {
-		return GachaResult{}, err
+		return &GachaResult{}, err
 	}
+	result.Name = name
+	fmt.Printf("Character: %d | %s\n", result.CharacterID, result.Name)
 	return result, nil
 }
