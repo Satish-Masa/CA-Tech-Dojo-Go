@@ -101,6 +101,8 @@ func (r Rest) gachaHandler(c echo.Context) error {
 
 	count, err := charApplication.CountChara()
 
+	fmt.Printf("Sum: %d, Times: %d\n", count, req.Times)
+
 	resp, err := application.Gacha(req.Times, id, count)
 	if err != nil {
 		return err
