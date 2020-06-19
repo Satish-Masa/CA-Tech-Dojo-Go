@@ -158,10 +158,9 @@ func (r Rest) Start() {
 
 	user := e.Group("/user")
 	user.Use(middleware.JWTWithConfig(Config))
-
 	user.GET("/get", r.getHandler)
 	user.PUT("/update", r.updateHandler)
-	e.POST("/gacha/draw", r.gachaHandler)
+	user.POST("/gacha", r.gachaHandler)
 	// e.GET("/character/list", listHandler)
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", config.Config.Port)))
 }
