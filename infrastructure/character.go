@@ -17,7 +17,7 @@ func NewCharacterRepository(conn *gorm.DB) domainCharacter.CharacterRepository {
 }
 
 func (c characterRepository) Count() (count int, err error) {
-	err = c.conn.Table("character").Count(&count).Error
+	err = c.conn.Table("characters").Count(&count).Error
 	if err != nil {
 		return -1, &echo.HTTPError{
 			Code:    http.StatusInternalServerError,
@@ -27,19 +27,7 @@ func (c characterRepository) Count() (count int, err error) {
 	return count, nil
 }
 
-func (c characterRepository) Find(id int) (domainCharacter.Character, error) {
-	var chara domainCharacter.Character
-	err := c.conn.First(&chara, "id = ?", id).Error
-	if err != nil {
-		return domainCharacter.Character{}, &echo.HTTPError{
-			Code:    http.StatusInternalServerError,
-			Message: "failed to find the character",
-		}
-	}
-	return chara, nil
-}
-
-func (c characterRepository) Create(chara *domainCharacter.Character) error {
+func (c *characterRepository) Create(chara *domainCharacter.Character) error {
 	err := c.conn.Create(&chara).Error
 	if err != nil {
 		return &echo.HTTPError{

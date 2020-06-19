@@ -7,6 +7,7 @@ import (
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/config"
 	domainChara "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/character"
 	domainUser "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/user"
+	domainUserChara "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/userCharacter"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/infrastructure"
 	"github.com/Satish-Masa/CA-Tech-Dojo-Go/interfaces"
 	"github.com/jinzhu/gorm"
@@ -29,9 +30,11 @@ func main() {
 
 	db.AutoMigrate(&domainUser.User{})
 	db.AutoMigrate(&domainChara.Character{})
+	db.AutoMigrate(&domainUserChara.UserCharacter{})
 
 	user := infrastructure.NewUserRepository(db)
 	gacha := infrastructure.NewGachaRepository(db)
-	rest := &interfaces.Rest{UserRepository: user, GachaRepository: gacha}
+	chara := infrastructure.NewCharacterRepository(db)
+	rest := &interfaces.Rest{UserRepository: user, GachaRepository: gacha, CharaRepository: chara}
 	rest.Start()
 }

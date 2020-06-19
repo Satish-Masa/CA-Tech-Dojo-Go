@@ -1,6 +1,7 @@
 package gacha
 
 import (
+	"fmt"
 	"math/rand"
 	"net/http"
 	"time"
@@ -20,87 +21,66 @@ type GachaDrawRequest struct {
 }
 
 type GachaDrawResponse struct {
-	Results []gachaResult
+	Results []GachaResult `json: "results"`
 }
 
-type gachaResult struct {
+type GachaResult struct {
 	CharacterID int    `json: "characterID"`
 	Name        string `json: "name"`
 }
 
-func (r GachaApplication) Gacha(times, uid, count int) (result GachaDrawResponse, err error) {
+func (r GachaApplication) Gacha(times, uid, count int) (GachaDrawResponse, error) {
+
 	if times < 1 {
 		return GachaDrawResponse{}, &echo.HTTPError{
 			Code:    http.StatusBadRequest,
-			Message: "invalied time",
+			Message: "invalied times",
 		}
 	}
 
-	if err != nil {
-		return GachaDrawResponse{}, err
-	}
+	charaList := GachaDrawResponse{}
 
-	var res []gachaResult
-
-	if times == 1 {
-		res, err := r.gachaOneTime(count)
-		if err != nil {
-			return GachaDrawResponse{}, err
-		}
-		character := domainUserCharacter.NewCharacter(uid, res[0].CharacterID, res[0].Name)
-		err = r.Repository.Create(*character)
-		if err != nil {
-			return GachaDrawResponse{}, err
-		}
-	} else {
-		res, err := r.gachaManyTime(count, times)
-		if err != nil {
-			return GachaDrawResponse{}, err
-		}
-
-		for i := 0; i < times; i++ {
-			character := domainUserCharacter.NewCharacter(uid, res[i].CharacterID, res[i].Name)
-			err := r.Repository.Create(*character)
-			if err != nil {
-				return GachaDrawResponse{}, err
-			}
-		}
-	}
-
-	result.Results = res
-
-	return result, nil
-}
-
-func (r GachaApplication) gachaOneTime(count int) (result []gachaResult, err error) {
-	result[0], err = r.doGacha(count)
-	if err != nil {
-		return []gachaResult{}, err
-	}
-
-	return result, nil
-}
-
-func (r GachaApplication) gachaManyTime(count, times int) ([]gachaResult, error) {
-	result := make([]gachaResult, times)
 	for i := 0; i < times; i++ {
 		chara, err := r.doGacha(count)
 		if err != nil {
-			return []gachaResult{}, err
+			return GachaDrawResponse{}, err
 		}
-		result[i] = chara
+
+		charaList.Results = append(charaList.Results, *chara)
+
+		var userChara domainUserCharacter.UserCharacter
+		userChara.CharacterID = chara.CharacterID
+		userChara.Name = chara.Name
+		userChara.UserCharacterID = uid
+		err = r.Repository.Create(userChara)
+		if err != nil {
+			return GachaDrawResponse{}, err
+		}
 	}
 
-	return result, nil
+	return charaList, nil
 }
 
-func (r GachaApplication) doGacha(count int) (result gachaResult, err error) {
+func (r GachaApplication) doGacha(count int) (*GachaResult, error) {
 	rand.Seed(time.Now().UnixNano())
-	result.CharacterID = rand.Intn(count)
-	chara, err := r.CharaRepository.Find(count)
-	result.Name = chara.Name
-	if err != nil {
-		return gachaResult{}, err
+	id := rand.Intn(count)
+	ok := true
+	if id == 0 {
+		ok = false
 	}
+	if !ok {
+		id = rand.Intn(count)
+		if id != 0 {
+			ok = true
+		}
+	}
+	result := new(GachaResult)
+	result.CharacterID = id
+	name, err := r.Repository.Find(id)
+	if err != nil {
+		return &GachaResult{}, err
+	}
+	result.Name = name
+	fmt.Printf("Character: %d | %s\n", result.CharacterID, result.Name)
 	return result, nil
 }

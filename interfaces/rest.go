@@ -101,6 +101,8 @@ func (r Rest) gachaHandler(c echo.Context) error {
 
 	count, err := charApplication.CountChara()
 
+	fmt.Printf("Sum: %d, Times: %d\n", count, req.Times)
+
 	resp, err := application.Gacha(req.Times, id, count)
 	if err != nil {
 		return err
@@ -158,10 +160,9 @@ func (r Rest) Start() {
 
 	user := e.Group("/user")
 	user.Use(middleware.JWTWithConfig(Config))
-
 	user.GET("/get", r.getHandler)
 	user.PUT("/update", r.updateHandler)
-	e.POST("/gacha/draw", r.gachaHandler)
+	user.POST("/gacha", r.gachaHandler)
 	// e.GET("/character/list", listHandler)
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", config.Config.Port)))
 }

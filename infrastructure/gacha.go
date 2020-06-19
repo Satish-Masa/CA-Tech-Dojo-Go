@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"net/http"
 
+	domainCharacter "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/character"
 	domainUserCharacter "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/userCharacter"
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
@@ -25,4 +26,16 @@ func (g *gachaRepository) Create(chara domainUserCharacter.UserCharacter) error 
 		}
 	}
 	return nil
+}
+
+func (c *gachaRepository) Find(id int) (string, error) {
+	var chara domainCharacter.Character
+	err := c.conn.First(&chara, "id = ?", id).Error
+	if err != nil {
+		return "", &echo.HTTPError{
+			Code:    http.StatusInternalServerError,
+			Message: "failed to find characters",
+		}
+	}
+	return chara.Name, nil
 }
