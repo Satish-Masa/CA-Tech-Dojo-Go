@@ -17,7 +17,7 @@ func NewCharacterRepository(conn *gorm.DB) domainCharacter.CharacterRepository {
 }
 
 func (c characterRepository) Count() (count int, err error) {
-	err = c.conn.Table("character").Count(&count).Error
+	err = c.conn.Table("characters").Count(&count).Error
 	if err != nil {
 		return -1, &echo.HTTPError{
 			Code:    http.StatusInternalServerError,
