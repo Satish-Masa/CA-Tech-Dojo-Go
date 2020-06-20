@@ -39,7 +39,3 @@ func (a UserApplication) FindUser(uid int) (UserGetResponce, error) {
 func (a UserApplication) UpdateUser(name string, id int) error {
 	return a.Repository.Update(name, id)
 }
-
-/* func (a UserApplication) GetList(u domain.User) (CharacterListResponse, error) {
-	return infrastructure.FindChara(u.Token)
-} */
