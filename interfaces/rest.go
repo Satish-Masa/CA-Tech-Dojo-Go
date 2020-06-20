@@ -11,6 +11,7 @@ import (
 	domainCharacter "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/character"
 	domainUser "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/user"
 	domainUserCharacter "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/userCharacter"
+	Err "github.com/Satish-Masa/CA-Tech-Dojo-Go/error"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
@@ -24,7 +25,10 @@ type Rest struct {
 func (r Rest) createHandler(c echo.Context) error {
 	req := new(user.UserCreatRequest)
 	if err := c.Bind(req); err != nil {
-		return err
+		return &echo.HTTPError{
+			Code:    http.StatusBadRequest,
+			Message: "failed to bind JSON",
+		}
 	}
 
 	if req.Name == "" {
@@ -42,7 +46,15 @@ func (r Rest) createHandler(c echo.Context) error {
 
 	err := application.SaveUser(u)
 	if err != nil {
-		return err
+		switch err {
+		case Err.ErrCreateUser:
+			return &echo.HTTPError{
+				Code:    http.StatusInternalServerError,
+				Message: "failed to save the user",
+			}
+		default:
+			return err
+		}
 	}
 
 	resp, err := FetchToken(u)
@@ -62,7 +74,15 @@ func (r Rest) getHandler(c echo.Context) error {
 
 	resp, err := application.FindUser(uid)
 	if err != nil {
-		return err
+		switch err {
+		case Err.ErrFindUser:
+			return &echo.HTTPError{
+				Code:    http.StatusInternalServerError,
+				Message: "failed to find the user",
+			}
+		default:
+			return err
+		}
 	}
 
 	return c.JSON(http.StatusOK, resp)
@@ -71,7 +91,10 @@ func (r Rest) getHandler(c echo.Context) error {
 func (r Rest) updateHandler(c echo.Context) error {
 	req := new(user.UserUpdateRequest)
 	if err := c.Bind(req); err != nil {
-		return err
+		return &echo.HTTPError{
+			Code:    http.StatusBadRequest,
+			Message: "failed to bind JSON",
+		}
 	}
 
 	uid := FindUserID(c)
@@ -80,13 +103,31 @@ func (r Rest) updateHandler(c echo.Context) error {
 		Repository: r.UserRepository,
 	}
 
-	return application.UpdateUser(req.Name, uid)
+	err := application.UpdateUser(req.Name, uid)
+	if err != nil {
+		switch err {
+		case Err.ErrUpdateUser:
+			return &echo.HTTPError{
+				Code:    http.StatusInternalServerError,
+				Message: "failed to update the user",
+			}
+		default:
+			return err
+		}
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"update": "Ok!!",
+	})
 }
 
 func (r Rest) gachaHandler(c echo.Context) error {
 	req := new(gacha.GachaDrawRequest)
 	if err := c.Bind(req); err != nil {
-		return err
+		return &echo.HTTPError{
+			Code:    http.StatusBadRequest,
+			Message: "failed to bind JSON",
+		}
 	}
 
 	application := gacha.GachaApplication{
@@ -101,11 +142,28 @@ func (r Rest) gachaHandler(c echo.Context) error {
 
 	count, err := charApplication.CountChara()
 
-	fmt.Printf("Sum: %d, Times: %d\n", count, req.Times)
-
 	resp, err := application.Gacha(req.Times, id, count)
+
 	if err != nil {
-		return err
+		switch err {
+		case Err.ErrCount:
+			return &echo.HTTPError{
+				Code:    http.StatusInternalServerError,
+				Message: "failed to count characters",
+			}
+		case Err.ErrFindChara:
+			return &echo.HTTPError{
+				Code:    http.StatusInternalServerError,
+				Message: "failed to find characters",
+			}
+		case Err.ErrCreateUserChara:
+			return &echo.HTTPError{
+				Code:    http.StatusInternalServerError,
+				Message: "failed to create the userCharacter",
+			}
+		default:
+			return err
+		}
 	}
 
 	return c.JSON(http.StatusOK, resp)
@@ -120,7 +178,15 @@ func (r Rest) listHandler(c echo.Context) error {
 
 	resp, err := application.FindAll(uid)
 	if err != nil {
-		return err
+		switch err {
+		case Err.ErrFindAll:
+			return &echo.HTTPError{
+				Code:    http.StatusInternalServerError,
+				Message: "failed to find your characters",
+			}
+		default:
+			return err
+		}
 	}
 
 	return c.JSON(http.StatusOK, resp)
@@ -129,7 +195,10 @@ func (r Rest) listHandler(c echo.Context) error {
 func (r Rest) createCharaHandler(c echo.Context) error {
 	req := new(character.CharaCreateRequest)
 	if err := c.Bind(req); err != nil {
-		return err
+		return &echo.HTTPError{
+			Code:    http.StatusBadRequest,
+			Message: "failed to bind JSON",
+		}
 	}
 
 	if req.Name == "" {
@@ -147,10 +216,20 @@ func (r Rest) createCharaHandler(c echo.Context) error {
 
 	err := application.CreateChara(chara)
 	if err != nil {
-		return err
+		switch err {
+		case Err.ErrCreateChara:
+			return &echo.HTTPError{
+				Code:    http.StatusInternalServerError,
+				Message: "failed to save the character",
+			}
+		default:
+			return err
+		}
 	}
 
-	return nil
+	return c.JSON(http.StatusOK, echo.Map{
+		"Create": "Ok!!",
+	})
 }
 
 func (r Rest) Start() {
