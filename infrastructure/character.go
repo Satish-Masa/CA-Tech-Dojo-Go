@@ -1,11 +1,9 @@
 package infrastructure
 
 import (
-	"net/http"
-
 	domainCharacter "github.com/Satish-Masa/CA-Tech-Dojo-Go/domain/character"
+	Err "github.com/Satish-Masa/CA-Tech-Dojo-Go/error"
 	"github.com/jinzhu/gorm"
-	"github.com/labstack/echo/v4"
 )
 
 type characterRepository struct {
@@ -19,10 +17,7 @@ func NewCharacterRepository(conn *gorm.DB) domainCharacter.CharacterRepository {
 func (c characterRepository) Count() (count int, err error) {
 	err = c.conn.Table("characters").Count(&count).Error
 	if err != nil {
-		return -1, &echo.HTTPError{
-			Code:    http.StatusInternalServerError,
-			Message: "failed to count characters",
-		}
+		return -1, Err.ErrCount
 	}
 	return count, nil
 }
@@ -30,10 +25,7 @@ func (c characterRepository) Count() (count int, err error) {
 func (c *characterRepository) Create(chara *domainCharacter.Character) error {
 	err := c.conn.Create(&chara).Error
 	if err != nil {
-		return &echo.HTTPError{
-			Code:    http.StatusInternalServerError,
-			Message: "failed to save the chara",
-		}
+		return Err.ErrCreateChara
 	}
 	return nil
 }
