@@ -1,7 +1,6 @@
 package gacha
 
 import (
-	"fmt"
 	"math/rand"
 	"net/http"
 	"time"
@@ -85,7 +84,6 @@ func (r GachaApplication) doGacha(count int) (*GachaResult, error) {
 		return &GachaResult{}, err
 	}
 	result.Name = name
-	fmt.Printf("Character: %d | %s\n", result.CharacterID, result.Name)
 	return result, nil
 }
 
